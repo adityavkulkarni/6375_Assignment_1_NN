@@ -30,4 +30,4 @@ or a new one. Some good resources for gradient descent optimizers are:
 
 ### Execution Instructions:
 
-### File Structure
+### File Structure:
