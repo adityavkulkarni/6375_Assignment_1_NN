@@ -13,7 +13,8 @@ In this part, you will code a neural network (NN) having at least one hidden lay
 - You are required to add an optimizer on top of the basic backpropagation
 algorithm. This could be the one you selected in the previous assigment
 or a new one. Some good resources for gradient descent optimizers are: 
-  - [An overview of gradient descent optimization algorithms](https://arxiv.org/pdf/1609.04747.pdf https://ruder.io/optimizing-gradient-descent/) 
+  - [An overview of gradient descent optimization algorithms](https://arxiv.org/pdf/1609.04747.pdf)
+  - [An overview of gradient descent optimization algorithms](https://ruder.io/optimizing-gradient-descent/)
 - You are required to code three different activation functions:
   1. Sigmoid 
   2. Tanh
@@ -28,6 +29,5 @@ or a new one. Some good resources for gradient descent optimizers are:
 - Description
 
 ### Execution Instructions:
-- 
 
 ### File Structure
