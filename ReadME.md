@@ -12,7 +12,8 @@ In this part, you will code a neural network (NN) having at least one hidden lay
 - Code a neural net having at least one hidden layer. You are free to select the number of neurons in each layer. Each neuron in the hidden and output layers should have a bias connection.
 - You are required to add an optimizer on top of the basic backpropagation
 algorithm. This could be the one you selected in the previous assigment
-or a new one. Some good resources for gradient descent optimizers are: https://arxiv.org/pdf/1609.04747.pdf https://ruder.io/optimizing-gradient-descent/ https://towardsdatascience.com/10- gradient- descent- optimisation- algorithms- 86989510b5e9
+or a new one. Some good resources for gradient descent optimizers are: 
+  - [An overview of gradient descent optimization algorithms](https://arxiv.org/pdf/1609.04747.pdf https://ruder.io/optimizing-gradient-descent/) 
 - You are required to code three different activation functions:
   1. Sigmoid 
   2. Tanh
