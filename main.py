@@ -27,9 +27,9 @@ def load_data(path, train_size=None):
 if __name__ == '__main__':
     train_df, test_df = load_data('data/Churn_Modelling.csv')
     _, sample_df = load_data('data/sample.csv', train_size=0)
-    nn = NeuralNet(debug=True, learning_rate=0.01)
-    nn.train(training_data=train_df, test_data=test_df, epochs=1)
+    nn = NeuralNet(debug=True, learning_rate=0.1)
+    nn.train(training_data=train_df, test_data=test_df, epochs=100)
     nn.test()
     for _, row in sample_df.iterrows():
-        nn.predict(row)
-        # print_d(f"Sample {_}: {nn.predict(row)}", debug=True)
+        # nn.predict(row)
+        print_d(f"Sample {_}: {nn.predict(row)}", debug=True)
