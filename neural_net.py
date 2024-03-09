@@ -1,6 +1,5 @@
 import numpy
 import pandas as pd
-import sys
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.metrics import accuracy_score
 
@@ -35,7 +34,7 @@ class LabelEncoderExt(object):
         """
         new_data_list = list(data_list)
         for unique_item in np.unique(data_list):
-            if unique_item not in self.label_encoder.classes_:
+            if str(unique_item) not in self.label_encoder.classes_:
                 new_data_list = ['Unknown' if x == unique_item else x for x in new_data_list]
         return self.label_encoder.transform(new_data_list)
 
@@ -72,18 +71,18 @@ class Neuron:
 
 
 class NeuralNet:
-    def __init__(self, activation_function="sigmoid", learning_rate=0.5, debug=False,
-                 input_layer_size=-1, hidden_layer_size=[10]):
+    def __init__(self, activation_function="sigmoid", debug=False,
+                 input_layer_size=-1, hidden_layer_size=None):
         """
 
         :param activation_function:
-        :param learning_rate:
         :param debug:
         :param input_layer_size:
         :param hidden_layer_size:
         """
+        if hidden_layer_size is None:
+            hidden_layer_size = [100]
         self.activation_function = activation_function
-        self.learning_rate = learning_rate
         self.input_layer_size = input_layer_size
         self.hidden_layer_size = hidden_layer_size
         self.hidden_layer_count = len(self.hidden_layer_size)
@@ -113,10 +112,11 @@ class NeuralNet:
             e += abs(t[i] - o[i]) ** 2
         return 0.5 * e / len(o)
 
-    @staticmethod
-    def __print_performance(y_true, y_pred):
+    def __print_performance(self, y_true, y_pred, debug=None):
+        if debug is None:
+            debug = self.debug
         print_d(f"Test Accuracy: {accuracy_score(y_true, y_pred)}",
-                debug=True)
+                debug=debug)
 
     def __preprocess_data(self):
         """
@@ -196,11 +196,12 @@ class NeuralNet:
             self.W[f"w_{self.neuron_count}_{p}"] = random_list(1)[0]
         self.neuron_count += 1
 
-    def train(self, training_data, test_data, epochs=100):
+    def train(self, training_data, test_data, learning_rate=0.5, epochs=100):
         """
         Train the neural network
         :param training_data:
         :param test_data:
+        :param learning_rate:
         :param epochs:
         :return:
         """
@@ -222,16 +223,15 @@ class NeuralNet:
             op = []
             for i in range(len(x)):
                 # Forward Pass
-                o = self.predict(x[i])
+                o = self.__predict(x[i])
                 op.append(o)
                 # sys.stdout.flush()
                 q = int(40 * i / len(x))
-                z = len(str(epoch))
                 s = '{:6.5f}'.format(self.__error(o, y[i]))
-                print(f"\rDEBUG | Epoch: {epoch + 1}{' '*(4 - len(str(epoch + 1)))} "
+                print(f"\rEpoch: {epoch + 1}{' '*(3 - len(str(epoch + 1)))} "
                       f"Training Loss: {s}   "
-                      f"[{u'=' * (q)}{('.' * (40 - q))}] {i + 1}/{len(x)}",
-                      end=' ', file=sys.stdout, flush=True)
+                      f"[{u'=' * q}{('.' * (40 - q))}] {i + 1}/{len(x)}",
+                      end='', file=sys.stdout, flush=True)
                 # Backward Pass
                 # Calculate d_i for each node
                 d = {}
@@ -239,42 +239,51 @@ class NeuralNet:
                 output_neuron = self.output_layer[0]
                 d[f"d_{output_neuron.name}"] = output_neuron.y * (1 - output_neuron.y) * (y[i] - output_neuron.y)
                 for hidden_neuron in self.hidden_layer[::-1][0]:
-                    d[f"d_{hidden_neuron.name}"] = hidden_neuron.y * (1 - hidden_neuron.y) * (self.W[f"w_{output_neuron.name}_{hidden_neuron.name}"] * d[f"d_{output_neuron.name}"])
-                    dw[f"w_{output_neuron.name}_{hidden_neuron.name}"] = self.learning_rate * d[f"d_{output_neuron.name}"] * hidden_neuron.y
-                    dw[f"w_{hidden_neuron.name}_b"] = self.learning_rate * d[f"d_{output_neuron.name}"] * output_neuron.bias
+                    d[f"d_{hidden_neuron.name}"] = (hidden_neuron.y * (1 - hidden_neuron.y) *
+                                                    (self.W[f"w_{output_neuron.name}_{hidden_neuron.name}"] *
+                                                     d[f"d_{output_neuron.name}"]))
+                    dw[f"w_{output_neuron.name}_{hidden_neuron.name}"] = (learning_rate *
+                                                                          d[f"d_{output_neuron.name}"] *
+                                                                          hidden_neuron.y)
+                    dw[f"w_{hidden_neuron.name}_b"] = (learning_rate * d[f"d_{output_neuron.name}"] *
+                                                       output_neuron.bias)
                 for input_neuron in self.input_layer:
                     for hidden_neuron in self.hidden_layer[0]:
-                        dw[f"w_{hidden_neuron.name}_{input_neuron.name}"] = self.learning_rate * d[
-                            f"d_{hidden_neuron.name}"] * input_neuron.y
-                        dw[f"w_{hidden_neuron.name}_b"] = self.learning_rate * d[
-                            f"d_{hidden_neuron.name}"] * hidden_neuron.bias
+                        dw[f"w_{hidden_neuron.name}_{input_neuron.name}"] = (learning_rate *
+                                                                             d[f"d_{hidden_neuron.name}"] *
+                                                                             input_neuron.y)
+                        dw[f"w_{hidden_neuron.name}_b"] = (learning_rate *
+                                                           d[f"d_{hidden_neuron.name}"] * hidden_neuron.bias)
                 # print(dw)
                 for key in dw:
                     self.W[key] += dw[key]
                 # Update weight for each neuron
             s = '{:6.5f}'.format(self.__error(op, y))
-            print(f"\rDEBUG | Epoch: {epoch + 1}{' '*(4 - len(str(epoch+1)))}"
+            t = '{:6.5f}'.format(self.test(debug=False))
+            print(f"\rEpoch: {epoch + 1}{' '*(3 - len(str(epoch+1)))}"
                   f" Training Loss: {s}   "
-                  f"[{u'=' * 40}] {i + 1}/{len(x)}\n",
+                  f"[{u'=' * 40}] {len(x)}/{len(x)}  Test Loss: {t}\n",
                   end='', file=sys.stdout, flush=True)
-            self.test()
 
-    def test(self):
+    def test(self, debug=None):
         """
         Test the neural network on the test/ validation set
         :return:
         """
+        if debug is None:
+            debug = self.debug
         test_data = self.test_data.to_numpy()
         x = np.array([sublist[:-1] for sublist in test_data])
         y = np.array([sublist[-1] for sublist in test_data])
-        x = self.min_max_scaler.transform(x)
+        x = self.min_max_scaler.fit_transform(x)
         op = []
         for i in range(len(x)):
-            op.append(1 if self.predict(x[i]) > 0.5 else 0)
-        print_d(f"Test Loss: {self.__error(op, y)}", debug=True)
-        # self.__print_performance(y_true=y, y_pred=op)
+            op.append(1 if self.__predict(x[i]) > 0.5 else 0)
+        print_d(f"Test Loss: {self.__error(op, y)}", debug=debug)
+        self.__print_performance(y_true=y, y_pred=op, debug=debug)
+        return self.__error(op, y)
 
-    def predict(self, x, debug=False):
+    def __predict(self, x, debug=False):
         """
         Give prediction for given input
         :param x:
@@ -284,7 +293,7 @@ class NeuralNet:
         if type(x) is pd.Series:
             x = self.__preprocess_row(x)
             x = x.to_numpy()
-            x = self.min_max_scaler.transform(x)
+            x = self.min_max_scaler.transform([x]).reshape((-1, 1))
         ip_o = []
         for i in range(len(self.input_layer)):
             ip_o.append(self.input_layer[i].output([x[i]]))
@@ -296,11 +305,15 @@ class NeuralNet:
                 hidden_ip = [ip_o[j] * self.W[f"w_{current_neuron.name}_{j+1}"]
                              for j in range(len(self.input_layer))]
                 hidden_ip.append(current_neuron.bias * self.W[f"w_{current_neuron.name}_b"])
-                hidden_o.append(current_neuron.output(hidden_ip) * self.W[f"w_{self.output_layer[0].name}_{current_neuron.name}"])
+                hidden_o.append(current_neuron.output(hidden_ip) *
+                                self.W[f"w_{self.output_layer[0].name}_{current_neuron.name}"])
         hidden_o.append(self.output_layer[0].bias + self.W[f"w_{self.output_layer[0].name}_b"])
         o = self.output_layer[0].output(hidden_o)
         print_d(f"Output of neural network : {o}", debug)
         return o
+
+    def predict(self, x):
+        return 1 if self.__predict(x) > 0.5 else 0
 
 
 if __name__ == "__main__":

@@ -13,6 +13,7 @@ def load_data(path, train_size=None):
         train_size = TRAINING_RATIO
     debug = train_size > 0
     data = pd.read_csv(path)
+    data.dropna()
     print_d(f"Data rows loaded: {len(data)}", debug=debug)
 
     shuffle_df = data.sample(frac=1)
@@ -27,9 +28,8 @@ def load_data(path, train_size=None):
 if __name__ == '__main__':
     train_df, test_df = load_data('data/Churn_Modelling.csv')
     _, sample_df = load_data('data/sample.csv', train_size=0)
-    nn = NeuralNet(debug=True, learning_rate=0.1)
-    nn.train(training_data=train_df, test_data=test_df, epochs=100)
-    nn.test()
-    #for _, row in sample_df.iterrows():
-        # nn.predict(row)
-        #print_d(f"Sample {_}: {nn.predict(row)}", debug=True)
+    nn = NeuralNet(debug=True)
+    nn.train(training_data=train_df, test_data=test_df, learning_rate=0.1, epochs=100)
+    for _, row in sample_df.iterrows():
+        nn.predict(row)
+        print_d(f"Sample {_}: {nn.predict(row)}", debug=True)
