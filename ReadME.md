@@ -25,8 +25,8 @@ or a new one. Some good resources for gradient descent optimizers are:
 - You have to tune model parameters like learning rate, activation functions, etc. Report your results in a tabular format, with a column indicating the parameters used, a column for training accuracy, and one for test accuracy.
 
 ### Dataset: 
-- Source: 
-- Description
+- Source: [Bank Churn Modelling](https://www.kaggle.com/datasets/filippoo/deep-learning-az-ann/download?datasetVersionNumber=1)
+- Description:
 
 ### Execution Instructions:
 

@@ -2,64 +2,14 @@ from neural_net_exceptions import *
 from utils import *
 
 
-class Neuron:
-    def __init__(self, activation_function, input_size, bias=0, name="neuron", debug=False):
-        """
-        Class for a single neuron
-        :param activation_function: Activation function: (sigmoid|tanh|relu)
-        :param input_size: Number of inputs
-        :param bias: Bias value for neuron (default = 0)
-        :param name: Name of neuron (optional)
-        :param debug: True for print_ding debug messages (optional, default=False)
-        """
-        self.activation_function = globals()[activation_function]
-        self.weights = random_list(input_size)
-        self.bias = bias
-        self.name = name
-        self.debug = False
-        self.net = 0
-        self.d = 0
-        self.dw = []
-        self.y = 0
-        print_d(f"Initial weights for {self.name} : {' '.join([str(x) for x in self.weights])}", self.debug)
-        print_d(f"Bias for {self.name} : {self.bias}", self.debug)
-
-    def output(self, x):
-        """
-        Function for generating neuron output
-        :param x: Input vector
-        :return: Output value
-        """
-        if len(self.weights) != len(x):
-            raise NeuronInputException(f"Neuron input length incorrect. "
-                                       f"Expected {len(self.weights)} but got {len(x)}")
-        net = self.bias
-        for i in range(len(x)):
-            net += x[i] * self.weights[i]
-        self.net = net
-        self.y = self.activation_function(net)
-        print_d(f"Output of {self.name} : {self.y}", self.debug)
-        return self.y
-
-    def update_weights(self, dw=None):
-        """
-        Function for updating weights for neuron
-        """
-        if dw:
-            self.dw = dw
-        if len(self.dw) != len(self.weights):
-            raise NeuronInputException(f"Neuron dw length incorrect. "
-                                       f"Expected {len(self.weights)} but got {len(dw)}")
-        print_d(f"Weight difference for {self.name}: {' '.join([str(x) for x in self.dw])}", self.debug)
-        for i in range(len(self.weights)):
-            self.weights[i] += self.dw[i]
-        print_d(f"Updated weights for {self.name} : {' '.join([str(x) for x in self.weights])}", self.debug)
 
 
 class NeuralNet:
-    def __init__(self, activation_function="sigmoid", learning_rate=0.01, debug=False):
+    def __init__(self, activation_function="sigmoid", learning_rate=0.01,
+                 epochs=500, debug=False):
         self.activation_function = activation_function
         self.learning_rate = learning_rate
+        self.epochs = epochs
         self.debug = debug
         self.input_layer = []
         self.ip_W = []
@@ -67,6 +17,8 @@ class NeuralNet:
         self.op_W = []
         self.output_layer = []
         self.hidden_layer = []
+        self.hidden_layer_info = []
+        self.custom_hidden_layer = False
         self.training_data = None
         self.test_data = None
         self.input_layer_size = None
@@ -87,8 +39,7 @@ class NeuralNet:
         self.training_data.drop(["Geography", "Gender"], axis=1, inplace=True)
         self.test_data.drop(["Geography", "Gender"], axis=1, inplace=True)
 
-    @staticmethod
-    def __preprocess_row(row):
+    def __preprocess_row(self, row):
         row.drop(["RowNumber", "CustomerId", "Surname"], inplace=True)
         row.drop(["Geography", "Gender"], inplace=True)
         return row
@@ -123,18 +74,23 @@ class NeuralNet:
         ]
         self.op_W.append(self.output_layer[0].weights)
 
-    def __add_hidden_layer(self, neuron_count=6):
-        hidden_layer = []
-        hidden_W = []
-        for i in range(neuron_count):
-            neuron = Neuron(activation_function=self.activation_function,
-                            input_size=len(self.input_layer), name=f"hidden-{i}",
-                            debug=True)
-            hidden_layer.append(neuron)
-            hidden_W.append(neuron.weights)
-        self.hidden_layer.append(hidden_layer)
-        self.hidden_W.append(hidden_W)
-        print_d(f"Added hidden layer with {neuron_count} neurons", self.debug)
+    def add_hidden_layer(self, neuron_count):
+        self.hidden_layer_info.append(neuron_count)
+        self.custom_hidden_layer = True
+
+    def __add_hidden_layer(self):
+        for neuron_count in self.hidden_layer_info:
+            hidden_layer = []
+            hidden_W = []
+            for i in range(neuron_count):
+                neuron = Neuron(activation_function=self.activation_function,
+                                input_size=len(self.input_layer), name=f"hidden-{i}",
+                                debug=True)
+                hidden_layer.append(neuron)
+                hidden_W.append(neuron.weights)
+            self.hidden_layer.append(hidden_layer)
+            self.hidden_W.append(hidden_W)
+            print_d(f"Added hidden layer with {neuron_count} neurons", self.debug)
 
     def train(self, training_data, test_data, input_layer_size=None):
         self.training_data = training_data
@@ -144,7 +100,10 @@ class NeuralNet:
         x = self.training_data[self.training_data.columns[:-1]]
         y = self.training_data[self.training_data.columns[-1]]
         self.__create_input_layer()
-        self.__default_hidden_layer()
+        if self.custom_hidden_layer:
+            self.__add_hidden_layer()
+        else:
+            self.__default_hidden_layer()
         self.__create_output_layer()
 
         """for epoch in range(self.epochs):

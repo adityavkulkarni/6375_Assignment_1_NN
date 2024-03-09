@@ -1,16 +1,33 @@
-# This is a sample Python script.
+import numpy as np
+import pandas as pd
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+from neural_net import NeuralNet
+from utils import print_d
 
 
-# Press the green button in the gutter to run the script.
+TRAINING_RATIO = 0.80
+
+
+def load_data(path, train_size=None):
+    if train_size is None:
+        train_size = TRAINING_RATIO
+    data = pd.read_csv(path)
+    print_d(f"Data rows loaded: {len(data)}", debug=True)
+
+    shuffle_df = data.sample(frac=1)
+    train_size = int(train_size * len(data))
+    tr = shuffle_df[:train_size]
+    ts = shuffle_df[train_size:]
+    print_d(f"Training data size: {len(tr)}", debug=True)
+    print_d(f"Testing data size: {len(ts)}", debug=True)
+    return tr, ts
+
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    train_df, test_df = load_data('data/Churn_Modelling.csv')
+    _, sample_df = load_data('data/sample.csv', train_size=0)
+    nn = NeuralNet(debug=True)
+    nn.add_hidden_layer(neuron_count=6)
+    nn.train(training_data=train_df, test_data=test_df)
+    for _, row in sample_df.iterrows():
+        print_d(f"Sample {_}: {nn.predict(row)}", debug=True)
