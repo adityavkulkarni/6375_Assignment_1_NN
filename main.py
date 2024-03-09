@@ -30,6 +30,6 @@ if __name__ == '__main__':
     nn = NeuralNet(debug=True, learning_rate=0.1)
     nn.train(training_data=train_df, test_data=test_df, epochs=100)
     nn.test()
-    for _, row in sample_df.iterrows():
+    #for _, row in sample_df.iterrows():
         # nn.predict(row)
-        print_d(f"Sample {_}: {nn.predict(row)}", debug=True)
+        #print_d(f"Sample {_}: {nn.predict(row)}", debug=True)
