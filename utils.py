@@ -15,6 +15,10 @@ def relu(x):
     return max(0, x)
 
 
+def identity(x):
+    return x
+
+
 # Math
 def sigmoid_prime(x):
     return sigmoid(x) * (1 - sigmoid(x))
@@ -29,11 +33,15 @@ def relu_prime(x):
 
 
 # Other
-def random_list(length, _range=(0, 0.1)):
+def random_list(length, _range=(-0.1, 0.1)):
     return [random.uniform(*_range) for i in range(length)]
 
 
 # Print
-def print_d(message, debug):
+def print_d(message, debug, end="\n"):
     if debug:
-        print(f"DEBUG | {message}")
+        if len(message.split('\r')) > 1:
+            message = message.split('\r')[1]
+            print(f"\rDEBUG | {message}", end=end)
+        else:
+            print(f"DEBUG | {message}", end=end)

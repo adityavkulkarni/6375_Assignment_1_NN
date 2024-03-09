@@ -135,3 +135,333 @@ if __name__ == "__main__":
     n1.output([2, 3])
     n1.update_weights([0.1, -1])
     n1.output([2, 3])
+
+
+
+###############################
+
+import numpy
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+
+from neural_net_exceptions import *
+from utils import *
+
+
+class LabelEncoderExt(object):
+    def __init__(self):
+        """
+        It differs from LabelEncoder by handling new classes and providing a value for it [Unknown]
+        Unknown will be added in fit and transform will take care of new item. It gives unknown class id
+        """
+        self.label_encoder = LabelEncoder()
+        # self.classes_ = self.label_encoder.classes_
+
+    def fit(self, data_list):
+        """
+        This will fit the encoder for all the unique values and introduce unknown value
+        :param data_list: A list of string
+        :return: self
+        """
+        self.label_encoder = self.label_encoder.fit(list(data_list) + ['Unknown'])
+        self.classes_ = self.label_encoder.classes_
+
+        return self
+
+    def transform(self, data_list):
+        """
+        This will transform the data_list to id list where the new values get assigned to Unknown class
+        :param data_list:
+        :return:
+        """
+        new_data_list = list(data_list)
+        for unique_item in np.unique(data_list):
+            if unique_item not in self.label_encoder.classes_:
+                new_data_list = ['Unknown' if x == unique_item else x for x in new_data_list]
+
+        return self.label_encoder.transform(new_data_list)
+
+
+class Neuron:
+    def __init__(self, activation_function, input_size, bias=0.5, name="neuron", debug=False):
+        """
+        Class for a single neuron
+        :param activation_function: Activation function: (sigmoid|tanh|relu)
+        :param input_size: Number of inputs
+        :param bias: Bias value for neuron (default = 0)
+        :param name: Name of neuron (optional)
+        :param debug: True for print_ding debug messages (optional, default=False)
+        """
+        self.activation_function = globals()[activation_function]
+        self.weights = random_list(input_size)
+        self.bias = random_list(1)[0]
+        self.name = name
+        self.debug = False
+        self.net = 0
+        self.d = 0
+        self.dw = []
+        self.y = 0
+        print_d(f"Initial weights for {self.name} : {' '.join([str(x) for x in self.weights])}", self.debug)
+        print_d(f"Bias for {self.name} : {self.bias}", self.debug)
+
+    def output(self, x):
+        """
+        Function for generating neuron output
+        :param x: Input vector
+        :return: Output value
+        """
+        if len(self.weights) != len(x):
+            raise NeuronInputException(f"Neuron input length incorrect. "
+                                       f"Expected {len(self.weights)} but got {len(x)}")
+        net = self.bias
+        for i in range(len(x)):
+            net += x[i] * self.weights[i]
+        # net += (1 * self.weights[i + 1])
+        self.net = net
+        self.y = self.activation_function(net)
+        print_d(f"Output of {self.name} : {self.y}", self.debug)
+        return self.y
+
+    def update_weights(self, dw=None):
+        """
+        Function for updating weights for neuron
+        """
+        if dw:
+            self.dw = dw
+        if len(self.dw) != len(self.weights):
+            raise NeuronInputException(f"{self.name} dw length incorrect. "
+                                       f"Expected {len(self.weights)} but got {len(dw)}")
+        print_d(f"Weight difference for {self.name}: {' '.join([str(x) for x in self.dw])}", self.debug)
+        for i in range(len(self.weights)):
+            self.weights[i] += self.dw[i]
+        print_d(f"Updated weights for {self.name} : {' '.join([str(x) for x in self.weights])}", self.debug)
+
+
+class NeuralNet:
+    def __init__(self, activation_function="sigmoid", learning_rate=0.5, debug=False):
+        self.activation_function = activation_function
+        self.learning_rate = learning_rate
+        self.debug = debug
+        self.input_layer = []
+        self.ip_W = []
+        self.hidden_W = []
+        self.op_W = []
+        self.W = {}
+        self.output_layer = []
+        self.hidden_layer = []
+        self.training_data = None
+        self.test_data = None
+        self.input_layer_size = 3
+        self.hidden_layer_size = 6
+
+    @staticmethod
+    def __error(o, t):
+        if type(o) is float or type(t) is float or type(o) is numpy.float64:
+            return 0.5 * (abs(o - t) ** 2)
+        e = 0
+        # check
+        for i in range(len(o)):
+            e += abs(o[i] - t[i]) ** 2
+        return 0.5 * e / len(o)
+
+    def __preprocess_data(self):
+        self.training_data.drop(["RowNumber", "CustomerId", "Surname"], axis=1, inplace=True)
+        self.test_data.drop(["RowNumber", "CustomerId", "Surname"], axis=1, inplace=True)
+        # For now
+        # self.training_data.drop(["Geography", "Gender"], axis=1, inplace=True)
+        # self.test_data.drop(["Geography", "Gender"], axis=1, inplace=True)
+        from sklearn.preprocessing import LabelEncoder
+        self.encoder_geo = LabelEncoderExt()
+        self.encoder_gender = LabelEncoderExt()
+        self.encoder_geo.fit(self.training_data["Geography"])
+        self.encoder_gender.fit(self.training_data["Gender"])
+        self.training_data["Gender"] = self.encoder_gender.transform(self.training_data["Gender"])
+        self.training_data["Geography"] = self.encoder_geo.transform(self.training_data["Geography"])
+
+        self.test_data["Gender"] = self.encoder_gender.transform(self.test_data["Gender"])
+        self.test_data["Geography"] = self.encoder_geo.transform(self.test_data["Geography"])
+        # self.training_data = pd.get_dummies(self.training_data, columns=["Geography", "Gender"])
+        # self.test_data = pd.get_dummies(self.test_data, columns=["Geography", "Gender"])
+
+    def __preprocess_row(self, row):
+        row.drop(["RowNumber", "CustomerId", "Surname"], inplace=True, errors="ignore")
+        # row.drop(["Geography", "Gender"], inplace=True, errors="ignore")
+
+        row["Gender"] = self.encoder_gender.transform(row["Gender"])
+        row["Geography"] = self.encoder_geo.transform(row["Geography"])
+        return row
+
+    def __create_input_layer(self):
+        for i in range(self.input_layer_size):
+            print_d(f"Added input neuron for feature {self.training_data.columns[i]}", self.debug)
+            self.input_layer.append(
+                Neuron(activation_function=self.activation_function,
+                       input_size=len(self.training_data.axes[1]) - 1, name=f"input-{i}", debug=True))
+            self.ip_W.append(self.input_layer[i].weights)
+
+    def __default_hidden_layer(self):
+        hidden_layer = []
+        hidden_W = []
+        for i in range(self.hidden_layer_size):
+            neuron = Neuron(activation_function=self.activation_function,
+                            input_size=len(self.input_layer), name=f"hidden-{i}",
+                            debug=True)
+            hidden_layer.append(neuron)
+            hidden_W.append(neuron.weights)
+        self.hidden_layer.append(hidden_layer)
+        self.hidden_W.append(hidden_W)
+
+    def __create_output_layer(self):
+        self.output_layer = [
+            Neuron(activation_function=self.activation_function,
+                   input_size=len(self.hidden_layer[-1]), name=f"output",
+                   debug=True)
+        ]
+        self.op_W.append(self.output_layer[0].weights)
+
+    def train(self, training_data, test_data, epochs=100):
+        self.training_data = training_data
+        self.test_data = test_data
+        self.__preprocess_data()
+        self.__create_input_layer()
+        self.__default_hidden_layer()
+        self.__create_output_layer()
+        # convert ip op to numpy array with proper indexing
+        training_data = self.training_data.to_numpy()
+        x = np.array([sublist[:-1] for sublist in training_data])
+        y = np.array([sublist[-1] for sublist in training_data])
+        test_data = self.test_data.to_numpy()
+        # x = self.training_data[self.training_data.columns[:-1]]
+        # y = self.training_data[self.training_data.columns[-1]]
+        for epoch in range(epochs):
+            o = []
+            for i in range(len(x)):
+                # Forward Pass
+                op = self.predict(x[i])
+                e = self.__error(op, y[i])
+                o.append(op)
+                # Backward Pass
+                d_o = op * (1 - op) * (y[i] - op)
+
+                d_h0 = self.hidden_layer[0][0].y * (1 - self.hidden_layer[0][0].y) + (d_o * op)
+                d_h1 = self.hidden_layer[0][1].y * (1 - self.hidden_layer[0][1].y) + (d_o * op)
+                d_h2 = self.hidden_layer[0][2].y * (1 - self.hidden_layer[0][2].y) + (d_o * op)
+                d_h3 = self.hidden_layer[0][3].y * (1 - self.hidden_layer[0][3].y) + (d_o * op)
+                d_h4 = self.hidden_layer[0][4].y * (1 - self.hidden_layer[0][4].y) + (d_o * op)
+                d_h5 = self.hidden_layer[0][5].y * (1 - self.hidden_layer[0][5].y) + (d_o * op)
+
+                d_i0 = self.input_layer[0].y * (1 - self.input_layer[0].y) * (
+                    (d_h0 * self.hidden_layer[0][0].weights[0]) +
+                    (d_h1 * self.hidden_layer[0][1].weights[0]) +
+                    (d_h2 * self.hidden_layer[0][2].weights[0]) +
+                    (d_h3 * self.hidden_layer[0][3].weights[0]) +
+                    (d_h4 * self.hidden_layer[0][4].weights[0]) +
+                    (d_h5 * self.hidden_layer[0][5].weights[0])
+                )
+                d_i1 = self.input_layer[1].y * (1 - self.input_layer[1].y) * (
+                        (d_h0 * self.hidden_layer[0][0].weights[1]) +
+                        (d_h1 * self.hidden_layer[0][1].weights[1]) +
+                        (d_h2 * self.hidden_layer[0][2].weights[1]) +
+                        (d_h3 * self.hidden_layer[0][3].weights[1]) +
+                        (d_h4 * self.hidden_layer[0][4].weights[1]) +
+                        (d_h5 * self.hidden_layer[0][5].weights[1])
+                )
+                d_i2 = self.input_layer[2].y * (1 - self.input_layer[2].y) * (
+                        (d_h0 * self.hidden_layer[0][0].weights[2]) +
+                        (d_h1 * self.hidden_layer[0][1].weights[2]) +
+                        (d_h2 * self.hidden_layer[0][2].weights[2]) +
+                        (d_h3 * self.hidden_layer[0][3].weights[2]) +
+                        (d_h4 * self.hidden_layer[0][4].weights[2]) +
+                        (d_h5 * self.hidden_layer[0][5].weights[2])
+                )
+
+                dw_o = [
+                    self.learning_rate * d_o * self.hidden_layer[0][0].y,
+                    self.learning_rate * d_o * self.hidden_layer[0][1].y,
+                    self.learning_rate * d_o * self.hidden_layer[0][2].y,
+                    self.learning_rate * d_o * self.hidden_layer[0][3].y,
+                    self.learning_rate * d_o * self.hidden_layer[0][4].y,
+                    self.learning_rate * d_o * self.hidden_layer[0][5].y
+                ]
+
+                dw_h0 = [
+                    self.learning_rate * d_h0 * self.input_layer[0].y,
+                    self.learning_rate * d_h0 * self.input_layer[1].y,
+                    self.learning_rate * d_h0 * self.input_layer[2].y
+                ]
+
+                dw_h1 = [
+                    self.learning_rate * d_h1 * self.input_layer[0].y,
+                    self.learning_rate * d_h1 * self.input_layer[1].y,
+                    self.learning_rate * d_h1 * self.input_layer[2].y
+                ]
+
+                dw_h2 = [
+                    self.learning_rate * d_h2 * self.input_layer[0].y,
+                    self.learning_rate * d_h2 * self.input_layer[1].y,
+                    self.learning_rate * d_h2 * self.input_layer[2].y
+                ]
+
+                dw_h3 = [
+                    self.learning_rate * d_h3 * self.input_layer[0].y,
+                    self.learning_rate * d_h3 * self.input_layer[1].y,
+                    self.learning_rate * d_h3 * self.input_layer[2].y
+                ]
+
+                dw_h4 = [
+                    self.learning_rate * d_h4 * self.input_layer[0].y,
+                    self.learning_rate * d_h4 * self.input_layer[1].y,
+                    self.learning_rate * d_h4 * self.input_layer[2].y
+                ]
+
+                dw_h5 = [
+                    self.learning_rate * d_h5 * self.input_layer[0].y,
+                    self.learning_rate * d_h5 * self.input_layer[1].y,
+                    self.learning_rate * d_h5 * self.input_layer[2].y
+                ]
+
+                self.output_layer[0].update_weights(dw_o)
+                self.hidden_layer[0][0].update_weights(dw_h0)
+                self.hidden_layer[0][1].update_weights(dw_h1)
+                self.hidden_layer[0][2].update_weights(dw_h2)
+                self.hidden_layer[0][3].update_weights(dw_h3)
+                self.hidden_layer[0][4].update_weights(dw_h4)
+                self.hidden_layer[0][5].update_weights(dw_h5)
+                #for i in self.input_layer:
+                #    i.update_weights(dw=[0 for _ in range(len(i.weights))])
+                #for h in self.hidden_layer[0]:
+                #    h.update_weights(dw=[-0 for _ in range(len(h.weights))])
+            print_d(f"Epoch: {epoch} Training Loss: {self.__error(o, y)}", debug=True)
+        test_data = self.test_data.to_numpy()
+        x = np.array([sublist[:-1] for sublist in test_data])
+        y = np.array([sublist[-1] for sublist in test_data])
+
+        op = []
+        for i in range(len(x)):
+            # Forward Pass
+            op.append(1 if self.predict(x[i]) > 0.5 else 0)
+        print_d(f"Test Loss: {self.__error(op, y)}", debug=True)
+        print_d(f"Test Accuracy: {len([i for i in range(len(op)) if p[[i]] == y[i]]) / len(op)}", debug=True)
+
+    def predict(self, x):
+        if type(x) is pd.Series:
+            x = self.__preprocess_row(x)
+            x = x.to_numpy()
+        ip_o = []
+        for i in range(len(self.input_layer)):
+            ip_o.append(self.input_layer[i].output(x))
+        h_o = []
+        for hidden_layer in self.hidden_layer:
+            for hidden_neuron in hidden_layer:
+                h_o.append(hidden_neuron.output(ip_o))
+        o = self.output_layer[0].output(h_o)
+        print_d(f"Output of neural network : {o}", self.debug)
+        return o
+
+
+if __name__ == "__main__":
+    n1 = Neuron(activation_function="tanh", bias=2, input_size=2,
+                name="sample neuron", debug=True)
+    n1.output([2, 3])
+    n1.update_weights([0.1, -1])
+    n1.output([2, 3])
