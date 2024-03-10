@@ -1,5 +1,6 @@
 import numpy
 import pandas as pd
+from matplotlib import pyplot as plt
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.metrics import accuracy_score
 
@@ -81,7 +82,7 @@ class NeuralNet:
         :param hidden_layer_size:
         """
         if hidden_layer_size is None:
-            hidden_layer_size = [100]
+            hidden_layer_size = [16]
         self.activation_function = activation_function
         self.input_layer_size = input_layer_size
         self.hidden_layer_size = hidden_layer_size
@@ -95,6 +96,7 @@ class NeuralNet:
         self.training_data = None
         self.test_data = None
         self.min_max_scaler = None
+        self.loss_viz = []
 
     @staticmethod
     def __error(o, t):
@@ -104,7 +106,7 @@ class NeuralNet:
         :param t: actual output
         :return:
         """
-        if type(o) is float or type(t) is float or type(o) is numpy.float64:
+        if type(o) is float or type(o) is int or type(o) is numpy.float64:
             return 0.5 * (abs(t - o) ** 2)
         e = 0
         # check
@@ -123,8 +125,8 @@ class NeuralNet:
         Function for preprocessing training and test data
         :return:
         """
-        self.training_data.drop(["RowNumber", "CustomerId", "Surname"], axis=1, inplace=True)
-        self.test_data.drop(["RowNumber", "CustomerId", "Surname"], axis=1, inplace=True)
+        self.training_data.drop(["RowNumber", "CustomerId", "Surname"], axis=1, inplace=True, errors="ignore")
+        self.test_data.drop(["RowNumber", "CustomerId", "Surname"], axis=1, inplace=True, errors="ignore")
         self.encoder_geo = LabelEncoderExt()
         self.encoder_gender = LabelEncoderExt()
         self.encoder_geo.fit(self.training_data["Geography"])
@@ -196,15 +198,22 @@ class NeuralNet:
             self.W[f"w_{self.neuron_count}_{p}"] = random_list(1)[0]
         self.neuron_count += 1
 
-    def train(self, training_data, test_data, learning_rate=0.5, epochs=100):
+    def train(self, training_data, test_data, learning_rate=0.5, epochs=100, optimizer="None"):
         """
         Train the neural network
         :param training_data:
         :param test_data:
         :param learning_rate:
         :param epochs:
+        :param optimizer:
         :return:
         """
+        print(f"Training neural network with:\n"
+              f"- Learning rate = {learning_rate}\n"
+              f"- Activation function = {self.activation_function}\n"
+              f"- Optimizer = {optimizer}")
+        v_t = {}
+        activation_function_prime = globals()[f"{self.activation_function}_prime"]
         self.training_data = training_data
         self.test_data = test_data
         self.__preprocess_data()
@@ -236,10 +245,13 @@ class NeuralNet:
                 # Calculate d_i for each node
                 d = {}
                 dw = {}
+                # Output layer d
                 output_neuron = self.output_layer[0]
-                d[f"d_{output_neuron.name}"] = output_neuron.y * (1 - output_neuron.y) * (y[i] - output_neuron.y)
+                d[f"d_{output_neuron.name}"] = (activation_function_prime(output_neuron.y) *
+                                                (y[i] - output_neuron.y))
+                # Output layer W update and hidden layer d
                 for hidden_neuron in self.hidden_layer[::-1][0]:
-                    d[f"d_{hidden_neuron.name}"] = (hidden_neuron.y * (1 - hidden_neuron.y) *
+                    d[f"d_{hidden_neuron.name}"] = (activation_function_prime(hidden_neuron.y) *
                                                     (self.W[f"w_{output_neuron.name}_{hidden_neuron.name}"] *
                                                      d[f"d_{output_neuron.name}"]))
                     dw[f"w_{output_neuron.name}_{hidden_neuron.name}"] = (learning_rate *
@@ -247,6 +259,7 @@ class NeuralNet:
                                                                           hidden_neuron.y)
                     dw[f"w_{hidden_neuron.name}_b"] = (learning_rate * d[f"d_{output_neuron.name}"] *
                                                        output_neuron.bias)
+                # Hidden layer W update
                 for input_neuron in self.input_layer:
                     for hidden_neuron in self.hidden_layer[0]:
                         dw[f"w_{hidden_neuron.name}_{input_neuron.name}"] = (learning_rate *
@@ -256,7 +269,14 @@ class NeuralNet:
                                                            d[f"d_{hidden_neuron.name}"] * hidden_neuron.bias)
                 # print(dw)
                 for key in dw:
-                    self.W[key] += dw[key]
+                    if optimizer == "momentum":
+                        if key in v_t:
+                            v_t[key] = 0.9 * v_t[key] + dw[key]
+                        else:
+                            v_t[key] = dw[key]
+                        self.W[key] += v_t[key]
+                    else:
+                        self.W[key] += dw[key]
                 # Update weight for each neuron
             s = '{:6.5f}'.format(self.__error(op, y))
             t = '{:6.5f}'.format(self.test(debug=False))
@@ -264,6 +284,21 @@ class NeuralNet:
                   f" Training Loss: {s}   "
                   f"[{u'=' * 40}] {len(x)}/{len(x)}  Test Loss: {t}\n",
                   end='', file=sys.stdout, flush=True)
+            self.loss_viz.append((epoch+1, s, t))
+        if self.debug:
+            self.plot_loss(f"{self.activation_function}_{optimizer}")
+
+    def plot_loss(self, suffix=""):
+        df = pd.DataFrame(self.loss_viz, columns=['Epochs', 'Training loss', 'Validation loss'])
+        df = df.astype({"Training loss": np.float64, "Validation loss": np.float64})
+        plt.rcParams["figure.figsize"] = (8, 6)
+        plt.plot(df["Epochs"], df["Training loss"])
+        plt.plot(df["Epochs"], df["Validation loss"])
+
+        plt.xlabel("Epochs")
+        plt.legend(["Training loss", "Validation loss"])
+        plt.title('Loss')
+        plt.savefig(f"./out/loss_{suffix}.png")
 
     def test(self, debug=None):
         """
