@@ -1,6 +1,6 @@
 import numpy
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.preprocessing import LabelEncoder, StandardScaler, MinMaxScaler
 from sklearn.metrics import accuracy_score
 
 from utils import *
@@ -81,7 +81,8 @@ class NeuralNet:
         :param hidden_layer_size:
         """
         if hidden_layer_size is None:
-            hidden_layer_size = [20, 12, 6]
+            hidden_layer_size = [18, 14]
+            # hidden_layer_size = [6, 6, 3]
             # hidden_layer_size = [20, 10, 5]
         self.activation_function = activation_function
         self.input_layer_size = input_layer_size
@@ -234,7 +235,7 @@ class NeuralNet:
         training_data = self.training_data.to_numpy()
         x = np.array([sublist[:-1] for sublist in training_data])
         y = np.array([sublist[-1] for sublist in training_data])
-        self.min_max_scaler = StandardScaler()
+        self.min_max_scaler = MinMaxScaler()
         self.min_max_scaler.fit(x)
         x = self.min_max_scaler.transform(x)
         for epoch in range(epochs):
@@ -347,7 +348,7 @@ class NeuralNet:
         test_data = self.test_data.to_numpy()
         x = np.array([sublist[:-1] for sublist in test_data])
         y = np.array([sublist[-1] for sublist in test_data])
-        x = self.min_max_scaler.fit_transform(x)
+        x = self.min_max_scaler.transform(x)
         op = []
         for i in range(len(x)):
             op.append(1 if self.__predict(x[i]) > 0.5 else 0)
