@@ -45,8 +45,7 @@ or a new one. Some good resources for gradient descent optimizers are:
 ### Execution Instructions:
 
 ### File Structure:
-```bash
-.
+``` .
 ├── ReadME.md
 ├── bu.py.bu : backup file
 ├── data
