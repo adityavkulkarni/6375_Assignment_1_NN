@@ -262,9 +262,20 @@ class NeuralNet:
                     dw[f"w_{hidden_neuron.name}_b"] = (learning_rate * d[f"d_{output_neuron.name}"] *
                                                        output_neuron.bias)
 
-                for inner_neuron in self.hidden_layer[0]:
+                for inner_neuron in self.hidden_layer[::-1][1]:
                     s = 0
                     for outer_neuron in self.hidden_layer[::-1][0]:
+                        s += (d[f"d_{outer_neuron.name}"] *
+                              self.W[f"w_{outer_neuron.name}_{inner_neuron.name}"])
+                        dw[f"w_{outer_neuron.name}_{inner_neuron.name}"] = (learning_rate *
+                                                                            d[f"d_{outer_neuron.name}"] *
+                                                                            inner_neuron.y)
+                        dw[f"w_{inner_neuron.name}_b"] = (learning_rate * d[f"d_{outer_neuron.name}"] *
+                                                          inner_neuron.bias)
+                    d[f"d_{inner_neuron.name}"] = activation_function_prime(inner_neuron.y) * s
+                for inner_neuron in self.hidden_layer[::-1][2]:
+                    s = 0
+                    for outer_neuron in self.hidden_layer[::-1][1]:
                         s += (d[f"d_{outer_neuron.name}"] *
                               self.W[f"w_{outer_neuron.name}_{inner_neuron.name}"])
                         dw[f"w_{outer_neuron.name}_{inner_neuron.name}"] = (learning_rate *

@@ -67,4 +67,4 @@ def random_list(length, _range=(-0.1, 0.1)):
 # Print
 def print_d(message, debug, end="\n"):
     if debug:
-            print(f"DEBUG | {message}", end=end)
+        print(f"DEBUG | {message}", end=end)

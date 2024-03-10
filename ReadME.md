@@ -27,7 +27,35 @@ or a new one. Some good resources for gradient descent optimizers are:
 ### Dataset: 
 - Source: [Bank Churn Modelling](https://www.kaggle.com/datasets/filippoo/deep-learning-az-ann/download?datasetVersionNumber=1)
 - Description:
+  A bank is investigating a very high rate of customer leaving the bank. Here is a 10.000 records dataset to investigate and predict which of the customers are more likely to leave the bank soon.
+  The data has following features:
+       
+     |   | CreditScore | Age | Tenure | Balance | NumOfProducts | HasCrCard | IsActiveMember | EstimatedSalary | Exited | 
+     |--|---|---|---|---|---|---|---|---|---|
+     | count | 10000.000000 | 10000.000000 | 10000.000000 | 10000.000000 | 10000.000000 | 10000.00000 | 10000.000000 | 10000.000000 | 10000.000000 | 
+     | mean | 650.528800 | 38.921800 | 5.012800 | 76485.889288 | 1.530200 | 0.70550 | 0.515100 | 100090.239881 | 0.203700 | 
+     | std | 96.653299 | 10.487806 | 2.892174 | 62397.405202 | 0.581654 | 0.45584 | 0.499797 | 57510.492818 | 0.402769 | 
+     | min | 350.000000 | 18.000000 | 0.000000 | 0.000000 | 1.000000 | 0.00000 | 0.000000 | 11.580000 | 0.000000 | 
+     | 25% | 584.000000 | 32.000000 | 3.000000 | 0.000000 | 1.000000 | 0.00000 | 0.000000 | 51002.110000 | 0.000000 | 
+     | 50% | 652.000000 | 37.000000 | 5.000000 | 97198.540000 | 1.000000 | 1.00000 | 1.000000 | 100193.915000 | 0.000000 | 
+     | 75% | 718.000000 | 44.000000 | 7.000000 | 127644.240000 | 2.000000 | 1.00000 | 1.000000 | 149388.247500 | 0.000000 | 
+     | max | 850.000000 | 92.000000 | 10.000000 | 250898.090000 | 4.000000 | 1.00000 | 1.000000 | 199992.480000 | 1.000000 |
+
 
 ### Execution Instructions:
 
 ### File Structure:
+```bash
+.
+├── ReadME.md
+├── bu.py.bu : backup file
+├── data
+│   ├── Churn_Modelling.csv : dataset
+│   └── sample.csv : sample dataset
+├── eda.ipynb : notebook for data exploration and misc tasks 
+├── main.py : main file
+├── neural_net.py : file containing ANN and related code
+├── nn-enhanced.pdf : assignment description
+├── out : directory for storing output
+└── utils.py : additional utils required for ANN
+```
