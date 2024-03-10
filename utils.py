@@ -59,10 +59,14 @@ def random_list(length, _range=(-0.1, 0.1)):
     ]
     return random.sample(w, length)"""
     min_val, max_val = _range
-    m = list(np.random.randn(length, ) * np.sqrt(2 / (33)))
+    m = list(np.random.randn(length, ) * np.sqrt(2 / (11)))
     return m
     # return [x[0] for x in random.uniform(min_val, max_val) for _ in range(length)]
 
+def xavier_uniform_init(fan_in, fan_out):
+    limit = np.sqrt(6 / float(fan_in + fan_out))
+    m = list(np.random.uniform(low=-limit, high=limit, size=(1, )))
+    return m
 
 # Print
 def print_d(message, debug, end="\n"):

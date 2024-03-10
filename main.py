@@ -32,30 +32,30 @@ if __name__ == '__main__':
     train_df, test_df = load_data('data/Churn_Modelling.csv')
     nn = NeuralNet(activation_function="sigmoid", debug=True)
     nn.train(training_data=train_df, test_data=test_df,
-             learning_rate=0.01, epochs=100)
+             learning_rate=0.1, epochs=100)
     nn.test()
 
     nn1 = NeuralNet(activation_function="tanh", debug=True)
     nn1.train(training_data=train_df, test_data=test_df,
-              learning_rate=0.01, epochs=100)
+              learning_rate=0.1, epochs=100)
     nn1.test()
 
     nn4 = NeuralNet(activation_function="relu", debug=True)
     nn4.train(training_data=train_df, test_data=test_df,
-              learning_rate=0.01, epochs=100)
+              learning_rate=0.1, epochs=100)
     nn4.test()
 
     nn2 = NeuralNet(activation_function="sigmoid", debug=True)
     nn2.train(training_data=train_df, test_data=test_df,
-              learning_rate=0.01, epochs=100, optimizer="momentum")
+              learning_rate=0.1, epochs=100, optimizer="momentum")
     nn2.test()
 
     nn3 = NeuralNet(activation_function="tanh", debug=True)
     nn3.train(training_data=train_df, test_data=test_df,
-              learning_rate=0.01, epochs=100, optimizer="momentum")
+              learning_rate=0.1, epochs=100, optimizer="momentum")
     nn3.test()
 
     nn3 = NeuralNet(activation_function="relu", debug=True)
     nn3.train(training_data=train_df, test_data=test_df,
-              learning_rate=0.01, epochs=100, optimizer="momentum")
+              learning_rate=0.1, epochs=100, optimizer="momentum")
     nn3.test()

@@ -81,8 +81,8 @@ class NeuralNet:
         :param hidden_layer_size:
         """
         if hidden_layer_size is None:
-            # hidden_layer_size = [18, 14]
-            hidden_layer_size = [20, 10]
+            hidden_layer_size = [20, 12, 6]
+            # hidden_layer_size = [20, 10, 5]
         self.activation_function = activation_function
         self.input_layer_size = input_layer_size
         self.hidden_layer_size = hidden_layer_size
@@ -175,11 +175,14 @@ class NeuralNet:
                 neuron = Neuron(activation_function=self.activation_function,
                                 name=self.neuron_count, bias=random_list(1)[0])
                 hidden_layer.append(neuron)
+                fan_out = self.hidden_layer_size[hidden_cnt+1] if hidden_cnt + 1 < self.hidden_layer_count else 1
                 for cnt in range(len(prev_layer)):
                     p = prev_layer[cnt].name
                     # self.W[f"hidden_{hidden_cnt}_{i}_{cnt}"] = random_list(1)[0]
-                    self.W[f"w_{self.neuron_count}_{p}"] = random_list(1)[0]
-                self.W[f"w_{self.neuron_count}_b"] = random_list(1)[0]
+                    # self.W[f"w_{self.neuron_count}_{p}"] = random_list(1)[0]
+                    self.W[f"w_{self.neuron_count}_{p}"] = xavier_uniform_init(fan_in=len(prev_layer), fan_out=fan_out)[0]
+                # self.W[f"w_{self.neuron_count}_b"] = random_list(1)[0]
+                self.W[f"w_{self.neuron_count}_b"] = xavier_uniform_init(fan_in=len(prev_layer), fan_out=fan_out)[0]
                 self.neuron_count += 1
             self.hidden_layer.append(hidden_layer)
             prev_layer = hidden_layer
@@ -193,10 +196,14 @@ class NeuralNet:
             Neuron(activation_function=self.activation_function,
                    name=self.neuron_count, bias=random_list(1)[0])
         ]
-        self.W[f"w_{self.neuron_count}_b"] = random_list(1)[0]
+        # self.W[f"w_{self.neuron_count}_b"] = random_list(1)[0]
+        self.W[f"w_{self.neuron_count}_b"] = xavier_uniform_init(fan_in=len(self.hidden_layer[::-1][0]),
+                                                                 fan_out=1)[0]
         for i in range(len(self.hidden_layer[-1])):
             p = self.hidden_layer[-1][i].name
-            self.W[f"w_{self.neuron_count}_{p}"] = random_list(1)[0]
+            # self.W[f"w_{self.neuron_count}_{p}"] = random_list(1)[0]
+            self.W[f"w_{self.neuron_count}_{p}"] = xavier_uniform_init(fan_in=len(self.hidden_layer[::-1][0]),
+                                                                 fan_out=1)[0]
         self.neuron_count += 1
 
     def train(self, training_data, test_data, learning_rate=0.5, epochs=100, optimizer="None"):
@@ -273,17 +280,18 @@ class NeuralNet:
                         dw[f"w_{inner_neuron.name}_b"] = (learning_rate * d[f"d_{outer_neuron.name}"] *
                                                           inner_neuron.bias)
                     d[f"d_{inner_neuron.name}"] = activation_function_prime(inner_neuron.y) * s
-                for inner_neuron in self.hidden_layer[::-1][2]:
-                    s = 0
-                    for outer_neuron in self.hidden_layer[::-1][1]:
-                        s += (d[f"d_{outer_neuron.name}"] *
-                              self.W[f"w_{outer_neuron.name}_{inner_neuron.name}"])
-                        dw[f"w_{outer_neuron.name}_{inner_neuron.name}"] = (learning_rate *
-                                                                            d[f"d_{outer_neuron.name}"] *
-                                                                            inner_neuron.y)
-                        dw[f"w_{inner_neuron.name}_b"] = (learning_rate * d[f"d_{outer_neuron.name}"] *
-                                                          inner_neuron.bias)
-                    d[f"d_{inner_neuron.name}"] = activation_function_prime(inner_neuron.y) * s
+                if self.hidden_layer_count == 3:
+                    for inner_neuron in self.hidden_layer[::-1][2]:
+                        s = 0
+                        for outer_neuron in self.hidden_layer[::-1][1]:
+                            s += (d[f"d_{outer_neuron.name}"] *
+                                  self.W[f"w_{outer_neuron.name}_{inner_neuron.name}"])
+                            dw[f"w_{outer_neuron.name}_{inner_neuron.name}"] = (learning_rate *
+                                                                                d[f"d_{outer_neuron.name}"] *
+                                                                                inner_neuron.y)
+                            dw[f"w_{inner_neuron.name}_b"] = (learning_rate * d[f"d_{outer_neuron.name}"] *
+                                                              inner_neuron.bias)
+                        d[f"d_{inner_neuron.name}"] = activation_function_prime(inner_neuron.y) * s
 
                 # Hidden layer W update
                 for input_neuron in self.input_layer:
