@@ -1,6 +1,5 @@
 import numpy
 import pandas as pd
-from matplotlib import pyplot as plt
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.metrics import accuracy_score
 
@@ -82,7 +81,8 @@ class NeuralNet:
         :param hidden_layer_size:
         """
         if hidden_layer_size is None:
-            hidden_layer_size = [16]
+            # hidden_layer_size = [18, 14]
+            hidden_layer_size = [20, 10]
         self.activation_function = activation_function
         self.input_layer_size = input_layer_size
         self.hidden_layer_size = hidden_layer_size
@@ -182,6 +182,7 @@ class NeuralNet:
                 self.W[f"w_{self.neuron_count}_b"] = random_list(1)[0]
                 self.neuron_count += 1
             self.hidden_layer.append(hidden_layer)
+            prev_layer = hidden_layer
 
     def __create_output_layer(self):
         """
@@ -213,6 +214,7 @@ class NeuralNet:
               f"- Activation function = {self.activation_function}\n"
               f"- Optimizer = {optimizer}")
         v_t = {}
+        self.loss_viz = []
         activation_function_prime = globals()[f"{self.activation_function}_prime"]
         self.training_data = training_data
         self.test_data = test_data
@@ -259,6 +261,19 @@ class NeuralNet:
                                                                           hidden_neuron.y)
                     dw[f"w_{hidden_neuron.name}_b"] = (learning_rate * d[f"d_{output_neuron.name}"] *
                                                        output_neuron.bias)
+
+                for inner_neuron in self.hidden_layer[0]:
+                    s = 0
+                    for outer_neuron in self.hidden_layer[::-1][0]:
+                        s += (d[f"d_{outer_neuron.name}"] *
+                              self.W[f"w_{outer_neuron.name}_{inner_neuron.name}"])
+                        dw[f"w_{outer_neuron.name}_{inner_neuron.name}"] = (learning_rate *
+                                                                            d[f"d_{outer_neuron.name}"] *
+                                                                            inner_neuron.y)
+                        dw[f"w_{inner_neuron.name}_b"] = (learning_rate * d[f"d_{outer_neuron.name}"] *
+                                                          inner_neuron.bias)
+                    d[f"d_{inner_neuron.name}"] = activation_function_prime(inner_neuron.y) * s
+
                 # Hidden layer W update
                 for input_neuron in self.input_layer:
                     for hidden_neuron in self.hidden_layer[0]:
@@ -284,21 +299,24 @@ class NeuralNet:
                   f" Training Loss: {s}   "
                   f"[{u'=' * 40}] {len(x)}/{len(x)}  Test Loss: {t}\n",
                   end='', file=sys.stdout, flush=True)
-            self.loss_viz.append((epoch+1, s, t))
+            self.loss_viz.append((epoch+1, self.__error(op, y), self.test(debug=False)))
         if self.debug:
-            self.plot_loss(f"{self.activation_function}_{optimizer}")
+            self.plot_loss(self.loss_viz, f"{self.activation_function}_{optimizer}")
 
-    def plot_loss(self, suffix=""):
-        df = pd.DataFrame(self.loss_viz, columns=['Epochs', 'Training loss', 'Validation loss'])
-        df = df.astype({"Training loss": np.float64, "Validation loss": np.float64})
-        plt.rcParams["figure.figsize"] = (8, 6)
-        plt.plot(df["Epochs"], df["Training loss"])
-        plt.plot(df["Epochs"], df["Validation loss"])
+    @staticmethod
+    def plot_loss(loss_viz, suffix=""):
+        df = pd.DataFrame(loss_viz, columns=['Epochs', 'Training loss', 'Validation loss'])
+        # df = df.astype({"Training loss": np.float64, "Validation loss": np.float64})
+        from matplotlib import pyplot as plt
+        fig = plt.figure(figsize=(10, 6))
+        ax = fig.add_subplot(1, 1, 1)
+        ax.plot(df["Epochs"], df["Training loss"])
+        ax.plot(df["Epochs"], df["Validation loss"])
 
         plt.xlabel("Epochs")
         plt.legend(["Training loss", "Validation loss"])
-        plt.title('Loss')
-        plt.savefig(f"./out/loss_{suffix}.png")
+        plt.title("Loss vs Epochs")
+        fig.savefig(f"./out/loss_{suffix}.png")
 
     def test(self, debug=None):
         """
@@ -333,15 +351,31 @@ class NeuralNet:
         for i in range(len(self.input_layer)):
             ip_o.append(self.input_layer[i].output([x[i]]))
         hidden_o = ip_o
-        for hidden_cnt in range(self.hidden_layer_count):
-            hidden_o = []
-            for i in range(self.hidden_layer_size[hidden_cnt]):
-                current_neuron = self.hidden_layer[hidden_cnt][i]
-                hidden_ip = [ip_o[j] * self.W[f"w_{current_neuron.name}_{j+1}"]
-                             for j in range(len(self.input_layer))]
-                hidden_ip.append(current_neuron.bias * self.W[f"w_{current_neuron.name}_b"])
-                hidden_o.append(current_neuron.output(hidden_ip) *
-                                self.W[f"w_{self.output_layer[0].name}_{current_neuron.name}"])
+        if self.hidden_layer_size == 1:
+            for hidden_cnt in range(self.hidden_layer_count):
+                hidden_o = []
+                for i in range(self.hidden_layer_size[hidden_cnt]):
+                    current_neuron = self.hidden_layer[hidden_cnt][i]
+                    hidden_ip = [ip_o[j] * self.W[f"w_{current_neuron.name}_{j+1}"]
+                                 for j in range(len(self.input_layer))]
+                    hidden_ip.append(current_neuron.bias * self.W[f"w_{current_neuron.name}_b"])
+                    hidden_o.append(current_neuron.output(hidden_ip) *
+                                    self.W[f"w_{self.output_layer[0].name}_{current_neuron.name}"])
+        else:
+            prev_layer = self.input_layer
+            hidden_o = [ip_o, [], [], []]
+            for hidden_cnt in range(self.hidden_layer_count):
+                for i in range(self.hidden_layer_size[hidden_cnt]):
+                    current_neuron = self.hidden_layer[hidden_cnt][i]
+                    hidden_ip = [hidden_o[hidden_cnt][j] * self.W[f"w_{current_neuron.name}_{prev_layer[j].name}"]
+                                 for j in range(len(prev_layer))]
+                    hidden_ip.append(current_neuron.bias * self.W[f"w_{current_neuron.name}_b"])
+                    hidden_o[hidden_cnt+1].append(current_neuron.output(hidden_ip))
+                    if hidden_cnt == len(self.hidden_layer_size) - 1:
+                        hidden_o[hidden_cnt+1].append(current_neuron.output(hidden_ip) *
+                                                      self.W[f"w_{self.output_layer[0].name}_{current_neuron.name}"])
+                prev_layer = self.hidden_layer[hidden_cnt]
+        hidden_o = hidden_o[hidden_cnt + 1]
         hidden_o.append(self.output_layer[0].bias + self.W[f"w_{self.output_layer[0].name}_b"])
         o = self.output_layer[0].output(hidden_o)
         print_d(f"Output of neural network : {o}", debug)

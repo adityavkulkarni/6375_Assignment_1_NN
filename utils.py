@@ -37,7 +37,7 @@ def relu_prime(x):
 
 # Other
 def random_list(length, _range=(-0.1, 0.1)):
-    w = [
+    """w = [
         -0.99, -0.98, -0.97, -0.96, -0.95, -0.94, -0.93, -0.92, -0.91, -0.90,
         -0.89, -0.88, -0.87, -0.86, -0.85, -0.84, -0.83, -0.82, -0.81, -0.80,
         -0.79, -0.78, -0.77, -0.76, -0.75, -0.74, -0.73, -0.72, -0.71, -0.70,
@@ -57,35 +57,14 @@ def random_list(length, _range=(-0.1, 0.1)):
         0.81, 0.82, 0.83, 0.84, 0.85, 0.86, 0.87, 0.88, 0.89, 0.90,
         0.91, 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.98, 0.99
     ]
-    return random.sample(w, length)
+    return random.sample(w, length)"""
+    min_val, max_val = _range
+    m = list(np.random.randn(length, ) * np.sqrt(2 / (33)))
+    return m
+    # return [x[0] for x in random.uniform(min_val, max_val) for _ in range(length)]
 
 
 # Print
 def print_d(message, debug, end="\n"):
     if debug:
             print(f"DEBUG | {message}", end=end)
-
-def show(j, count, size=60, prefix="DEBUG | "):
-    x = int(size * j / count)
-    out = sys.stdout
-    print(f"{prefix}[{u'█' * x}{('.' * (size - x))}] {j}/{count} ", end='\r', file=out,
-          flush=True)
-def progressbar(it, prefix="", size=60):
-    count = len(it)
-    start = time.time()
-    out = sys.stdout
-
-    """def show(j):
-        x = int(size * j / count)
-        remaining = ((time.time() - start) / j) * (count - j)
-
-        mins, sec = divmod(remaining, 60)
-        time_str = f"{int(mins):02}:{sec:05.2f}"
-
-        print(f"{prefix}[{u'█' * x}{('.' * (size - x))}] {j}/{count} Est wait {time_str}", end='\r', file=out,
-              flush=True)"""
-
-    for i, item in enumerate(it):
-        yield item
-        show(i + 1, count=count, prefix=prefix)
-    print("", flush=True, file=out)
