@@ -336,7 +336,7 @@ class NeuralNet:
 
     def plot_loss(self, loss_viz, acc_viz, suffix=""):
         df = pd.DataFrame(loss_viz, columns=['Epochs', 'Training loss', 'Validation loss'])
-        fig1 = plt.figure(figsize=(19, 10))
+        fig1 = plt.figure(figsize=(16, 9))
         ax = fig1.add_subplot(1, 1, 1)
         ax.plot(df["Epochs"], df["Training loss"])
         ax.plot(df["Epochs"], df["Validation loss"])
@@ -352,7 +352,7 @@ class NeuralNet:
         fig1.savefig(f"./out/{suffix.split('_')[-1]}/loss_{suffix}_{time.time()}.png")
 
         df = pd.DataFrame(acc_viz, columns=['Epochs', 'Training Accuracy', 'Validation Accuracy'])
-        fig2 = plt.figure(figsize=(19, 10))
+        fig2 = plt.figure(figsize=(16, 9))
         ax = fig2.add_subplot(1, 1, 1)
         ax.plot(df["Epochs"], df["Training Accuracy"])
         ax.plot(df["Epochs"], df["Validation Accuracy"])

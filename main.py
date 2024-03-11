@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 from neural_net import NeuralNet, LabelEncoderExt
 from utils import print_d
 
-plt.style.use('fivethirtyeight')
+plt.style.use('tableau-colorblind10')
 TRAINING_RATIO = 0.75
 HEART = CANCER = BANK = False
 SIGMOID = TANH = RELU = False
@@ -170,7 +170,7 @@ if __name__ == '__main__':
         compare.append(d)
     compare = pd.DataFrame(compare)
     compare.set_index('Dataset', inplace=True)
-    ax = compare.plot(kind='bar', figsize=(19, 10), rot=0)
+    ax = compare.plot(kind='bar', figsize=(16, 9), rot=0)
 
     # Add title and labels
     plt.title('Performance of Different Models on Various Datasets')
