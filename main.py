@@ -1,14 +1,14 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from neural_net import NeuralNet
+from neural_net import NeuralNet, LabelEncoderExt
 from utils import print_d
 
 
-TRAINING_RATIO = 0.80
+TRAINING_RATIO = 0.75
 
 
-def load_data(path, train_size=None):
+def load_data(path, target_col="", train_size=None):
     if train_size is None:
         train_size = TRAINING_RATIO
     debug = train_size > 0
@@ -17,9 +17,10 @@ def load_data(path, train_size=None):
     print_d(f"Data rows loaded: {len(data)}", debug=debug)
 
     # Splitting the data into training and test sets (adjust test_size as needed)
-    X = data.drop(columns=['Exited'])  # Features
-    y = data['Exited']  # Target variable
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=42)
+    X = data.drop(columns=[target_col])  # Features
+    y = data[target_col]  # Target variable
+    X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=train_size,
+                                                        random_state=33, shuffle=True, stratify=y)
 
     return pd.concat([X_train, y_train], axis=1), pd.concat([X_test, y_test], axis=1)
     # shuffle_df = data.sample(frac=1)
@@ -29,33 +30,39 @@ def load_data(path, train_size=None):
 
 
 if __name__ == '__main__':
-    train_df, test_df = load_data('data/Churn_Modelling.csv')
-    nn = NeuralNet(activation_function="sigmoid", debug=True)
-    nn.train(training_data=train_df, test_data=test_df,
-             learning_rate=0.08, epochs=50)
-    nn.test()
+    # Bank churn dataset
+    train_df, val_df = load_data('data/Churn_Modelling.csv', target_col='Exited')
+    train_df.drop(["RowNumber", "CustomerId", "Surname"], axis=1, inplace=True, errors="ignore")
+    val_df.drop(["RowNumber", "CustomerId", "Surname"], axis=1, inplace=True, errors="ignore")
+    encoder_geo = LabelEncoderExt()
+    encoder_gender = LabelEncoderExt()
+    encoder_geo.fit(train_df["Geography"])
+    encoder_gender.fit(train_df["Gender"])
+    train_df["Gender"] = encoder_gender.transform(train_df["Gender"])
+    train_df["Geography"] = encoder_geo.transform(train_df["Geography"])
+    val_df["Gender"] = encoder_gender.transform(val_df["Gender"])
+    val_df["Geography"] = encoder_geo.transform(val_df["Geography"])
 
-    nn1 = NeuralNet(activation_function="tanh", debug=True)
-    nn1.train(training_data=train_df, test_data=test_df,
-              learning_rate=0.08, epochs=50)
+    nn5 = NeuralNet(activation_function="sigmoid", hidden_layer_size=[10, 7, 5])
+    nn5.train(training_data=train_df, test_data=val_df,
+              learning_rate=0.1, epochs=100)
+    nn5.test()
+
+    nn7 = NeuralNet(activation_function="sigmoid", hidden_layer_size=[10, 7, 5])
+    nn7.train(training_data=train_df, test_data=val_df,
+              learning_rate=0.01, epochs=100, optimizer="momentum")
+    nn7.test()
+
+    # Heart disease dataset
+    train_df, val_df = load_data('data/heart_disease_health_indicators_BRFSS2015.csv',
+                                  target_col='HeartDiseaseorAttack')
+
+    nn1 = NeuralNet(activation_function="sigmoid")
+    nn1.train(training_data=train_df, test_data=val_df,
+              learning_rate=0.01, epochs=50)
     nn1.test()
 
-    nn4 = NeuralNet(activation_function="relu", debug=True)
-    nn4.train(training_data=train_df, test_data=test_df,
-              learning_rate=0.08, epochs=50)
-    nn4.test()
-
-    nn2 = NeuralNet(activation_function="sigmoid", debug=True)
-    nn2.train(training_data=train_df, test_data=test_df,
-              learning_rate=0.08, epochs=50, optimizer="momentum")
-    nn2.test()
-
-    nn3 = NeuralNet(activation_function="tanh", debug=True)
-    nn3.train(training_data=train_df, test_data=test_df,
-              learning_rate=0.08, epochs=50, optimizer="momentum")
-    nn3.test()
-
-    nn3 = NeuralNet(activation_function="relu", debug=True)
-    nn3.train(training_data=train_df, test_data=test_df,
-              learning_rate=0.08, epochs=50, optimizer="momentum")
+    nn3 = NeuralNet(activation_function="sigmoid")
+    nn3.train(training_data=train_df, test_data=val_df,
+              learning_rate=0.01, epochs=50, optimizer="momentum")
     nn3.test()

@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 
 # Activation Functions
@@ -33,7 +34,8 @@ def relu_prime(x):
 
 # Weight Initialization
 def random_list(length, _range=(-0.1, 0.1)):
-    return list(np.random.randn(length, ) * np.sqrt(2 / (11)))
+        min_val, max_val = _range
+        return [random.uniform(min_val, max_val) for _ in range(length)]
 
 
 def xavier_uniform_init(fan_in, fan_out):

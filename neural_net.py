@@ -1,6 +1,10 @@
+import sys
+import time
+from datetime import datetime
+
 import numpy
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder, StandardScaler, MinMaxScaler
+from sklearn.preprocessing import LabelEncoder, StandardScaler, MinMaxScaler, RobustScaler
 from sklearn.metrics import accuracy_score
 
 from utils import *
@@ -81,8 +85,8 @@ class NeuralNet:
         :param hidden_layer_size:
         """
         if hidden_layer_size is None:
-            hidden_layer_size = [18, 14]
-            # hidden_layer_size = [6, 6, 3]
+            # hidden_layer_size = [18, 14, 12]
+            hidden_layer_size = [14, 8, 5]
             # hidden_layer_size = [20, 10, 5]
         self.activation_function = activation_function
         self.input_layer_size = input_layer_size
@@ -96,8 +100,9 @@ class NeuralNet:
         self.W = {}
         self.training_data = None
         self.test_data = None
-        self.min_max_scaler = None
+        self.scaler = None
         self.loss_viz = []
+        self.acc_viz = []
 
     @staticmethod
     def __error(o, t):
@@ -113,19 +118,21 @@ class NeuralNet:
         # check
         for i in range(len(o)):
             e += abs(t[i] - o[i]) ** 2
-        return 0.5 * e / len(o)
+        return 0.5 * e / len(t)
 
     def __print_performance(self, y_true, y_pred, debug=None):
         if debug is None:
             debug = self.debug
-        print_d(f"Test Accuracy: {accuracy_score(y_true, y_pred)}",
+        acc = accuracy_score(y_true, y_pred)
+        print_d(f"Test Accuracy: {acc}",
                 debug=debug)
+        return acc
 
-    def __preprocess_data(self):
-        """
+    """def __preprocess_data(self):
+        '''
         Function for preprocessing training and test data
         :return:
-        """
+        '''
         self.training_data.drop(["RowNumber", "CustomerId", "Surname"], axis=1, inplace=True, errors="ignore")
         self.test_data.drop(["RowNumber", "CustomerId", "Surname"], axis=1, inplace=True, errors="ignore")
         self.encoder_geo = LabelEncoderExt()
@@ -139,15 +146,15 @@ class NeuralNet:
         self.test_data["Geography"] = self.encoder_geo.transform(self.test_data["Geography"])
 
     def __preprocess_row(self, row):
-        """
+        '''
         Preprocess a single row of data
         :param row:
         :return:
-        """
+        '''
         row.drop(["RowNumber", "CustomerId", "Surname"], inplace=True, errors="ignore")
         row["Gender"] = self.encoder_gender.transform([row["Gender"]])[0]
         row["Geography"] = self.encoder_geo.transform([row["Geography"]])[0]
-        return row
+        return row"""
 
     def __create_input_layer(self):
         """
@@ -174,7 +181,7 @@ class NeuralNet:
             hidden_layer = []
             for i in range(self.hidden_layer_size[hidden_cnt]):
                 neuron = Neuron(activation_function=self.activation_function,
-                                name=self.neuron_count, bias=random_list(1)[0])
+                                name=self.neuron_count, bias=1)
                 hidden_layer.append(neuron)
                 fan_out = self.hidden_layer_size[hidden_cnt+1] if hidden_cnt + 1 < self.hidden_layer_count else 1
                 for cnt in range(len(prev_layer)):
@@ -183,7 +190,8 @@ class NeuralNet:
                     # self.W[f"w_{self.neuron_count}_{p}"] = random_list(1)[0]
                     self.W[f"w_{self.neuron_count}_{p}"] = xavier_uniform_init(fan_in=len(prev_layer), fan_out=fan_out)[0]
                 # self.W[f"w_{self.neuron_count}_b"] = random_list(1)[0]
-                self.W[f"w_{self.neuron_count}_b"] = xavier_uniform_init(fan_in=len(prev_layer), fan_out=fan_out)[0]
+                # self.W[f"w_{self.neuron_count}_b"] = xavier_uniform_init(fan_in=len(prev_layer), fan_out=fan_out)[0]
+                self.W[f"w_{self.neuron_count}_b"] = 1
                 self.neuron_count += 1
             self.hidden_layer.append(hidden_layer)
             prev_layer = hidden_layer
@@ -195,11 +203,11 @@ class NeuralNet:
         """
         self.output_layer = [
             Neuron(activation_function=self.activation_function,
-                   name=self.neuron_count, bias=random_list(1)[0])
+                   name=self.neuron_count, bias=1)
         ]
-        # self.W[f"w_{self.neuron_count}_b"] = random_list(1)[0]
-        self.W[f"w_{self.neuron_count}_b"] = xavier_uniform_init(fan_in=len(self.hidden_layer[::-1][0]),
-                                                                 fan_out=1)[0]
+        self.W[f"w_{self.neuron_count}_b"] = 1
+        # self.W[f"w_{self.neuron_count}_b"] = xavier_uniform_init(fan_in=len(self.hidden_layer[::-1][0]),
+        #                                                         fan_out=1)[0]
         for i in range(len(self.hidden_layer[-1])):
             p = self.hidden_layer[-1][i].name
             # self.W[f"w_{self.neuron_count}_{p}"] = random_list(1)[0]
@@ -221,12 +229,15 @@ class NeuralNet:
               f"- Learning rate = {learning_rate}\n"
               f"- Activation function = {self.activation_function}\n"
               f"- Optimizer = {optimizer}")
+        start_time = datetime.now()
+        # Init
         v_t = {}
         self.loss_viz = []
+        self.acc_viz = []
         activation_function_prime = globals()[f"{self.activation_function}_prime"]
         self.training_data = training_data
         self.test_data = test_data
-        self.__preprocess_data()
+        # self.__preprocess_data()
         # Create Neural network structure
         self.__create_input_layer()
         self.__default_hidden_layer()
@@ -235,24 +246,31 @@ class NeuralNet:
         training_data = self.training_data.to_numpy()
         x = np.array([sublist[:-1] for sublist in training_data])
         y = np.array([sublist[-1] for sublist in training_data])
-        self.min_max_scaler = MinMaxScaler()
-        self.min_max_scaler.fit(x)
-        x = self.min_max_scaler.transform(x)
+        if self.activation_function == "tanh":
+            yy = []
+            for b in y:
+                if b:
+                  yy.append(1)
+                else:
+                    yy.append(-1)
+            y = np.array(yy)
+        self.scaler = StandardScaler()
+        self.scaler.fit(x)
+        x = self.scaler.transform(x)
+        t, t_acc = self.test(debug=False)
+        print(f"Test Accuracy: {t_acc}")
         for epoch in range(epochs):
             op = []
             for i in range(len(x)):
                 # Forward Pass
                 o = self.__predict(x[i])
                 op.append(o)
-                # sys.stdout.flush()
+                # Printing
                 q = int(40 * i / len(x))
-                s = '{:6.5f}'.format(self.__error(o, y[i]))
                 print(f"\rEpoch: {epoch + 1}{' '*(3 - len(str(epoch + 1)))} "
-                      f"Training Loss: {s}   "
                       f"[{u'=' * q}{('.' * (40 - q))}] {i + 1}/{len(x)}",
                       end='', file=sys.stdout, flush=True)
                 # Backward Pass
-                # Calculate d_i for each node
                 d = {}
                 dw = {}
                 # Output layer d
@@ -312,31 +330,53 @@ class NeuralNet:
                         self.W[key] += v_t[key]
                     else:
                         self.W[key] += dw[key]
-                # Update weight for each neuron
-            s = '{:6.5f}'.format(self.__error(op, y))
-            t = '{:6.5f}'.format(self.test(debug=False))
-            print(f"\rEpoch: {epoch + 1}{' '*(3 - len(str(epoch+1)))}"
-                  f" Training Loss: {s}   "
-                  f"[{u'=' * 40}] {len(x)}/{len(x)}  Test Loss: {t}\n",
+
+            # Printing and Plotting
+            s = self.__error(op, y)
+            t, t_acc = self.test(debug=False)
+            print(f"\rEpoch: {epoch + 1}{' '*(3 - len(str(epoch+1)))} " 
+                  f"[{u'=' * 40}] {len(x)}/{len(x)}   "
+                  f"Training Loss: {'{:6.5f}'.format(s)}   "
+                  f"Val Loss: {'{:6.5f}'.format(t)}\n",
                   end='', file=sys.stdout, flush=True)
-            self.loss_viz.append((epoch+1, self.__error(op, y), self.test(debug=False)))
-        if self.debug:
-            self.plot_loss(self.loss_viz, f"{self.activation_function}_{optimizer}")
+            self.loss_viz.append((epoch+1, s, t))
+            o1 = []
+            for v in op:
+                if self.activation_function == "sigmoid":
+                    o1.append(1 if v > 0.4 else 0)
+            self.acc_viz.append((epoch+1, self.__print_performance(y, o1, debug=False), t_acc))
+            # r_acc = self.__print_performance(y, o1, debug=False)
+        end_time = 'Time elapsed (hh:mm:ss.ms) {}'.format(datetime.now() - start_time )
+        print(f"Training Accuracy: {self.acc_viz[-1][1]}\n"
+              f"Test Accuracy: {self.acc_viz[-1][2]}\n"
+              f"Training Time: {end_time}\n")
+        self.plot_loss(self.loss_viz, self.acc_viz, f"{self.activation_function}_{optimizer}")
 
     @staticmethod
-    def plot_loss(loss_viz, suffix=""):
+    def plot_loss(loss_viz, acc_viz, suffix=""):
         df = pd.DataFrame(loss_viz, columns=['Epochs', 'Training loss', 'Validation loss'])
         # df = df.astype({"Training loss": np.float64, "Validation loss": np.float64})
         from matplotlib import pyplot as plt
-        fig = plt.figure(figsize=(10, 6))
-        ax = fig.add_subplot(1, 1, 1)
+        fig1 = plt.figure(figsize=(10, 6))
+        ax = fig1.add_subplot(1, 1, 1)
         ax.plot(df["Epochs"], df["Training loss"])
         ax.plot(df["Epochs"], df["Validation loss"])
 
         plt.xlabel("Epochs")
         plt.legend(["Training loss", "Validation loss"])
         plt.title("Loss vs Epochs")
-        fig.savefig(f"./out/loss_{suffix}.png")
+        fig1.savefig(f"./out/loss_{suffix}_{time.time()}.png")
+
+        df = pd.DataFrame(acc_viz, columns=['Epochs', 'Training Accuracy', 'Validation Accuracy'])
+        fig2 = plt.figure(figsize=(10, 6))
+        ax = fig2.add_subplot(1, 1, 1)
+        ax.plot(df["Epochs"], df["Training Accuracy"])
+        ax.plot(df["Epochs"], df["Validation Accuracy"])
+
+        plt.xlabel("Epochs")
+        plt.legend(["Training Accuracy", "Validation Accuracy"])
+        plt.title("Accuracy vs Epochs")
+        fig2.savefig(f"./out/acc_{suffix}_{time.time()}.png")
 
     def test(self, debug=None):
         """
@@ -348,13 +388,16 @@ class NeuralNet:
         test_data = self.test_data.to_numpy()
         x = np.array([sublist[:-1] for sublist in test_data])
         y = np.array([sublist[-1] for sublist in test_data])
-        x = self.min_max_scaler.transform(x)
+        x = self.scaler.transform(x)
+        op1 = []
         op = []
         for i in range(len(x)):
-            op.append(1 if self.__predict(x[i]) > 0.5 else 0)
-        print_d(f"Test Loss: {self.__error(op, y)}", debug=debug)
-        self.__print_performance(y_true=y, y_pred=op, debug=debug)
-        return self.__error(op, y)
+            op.append(self.__predict(x[i]))
+            if self.activation_function == "sigmoid":
+                op1.append(1 if self.__predict(x[i]) > 0.4 else 0)
+        print_d(f"Test Loss: {self.__error(op, y)}", debug=False)
+        acc = self.__print_performance(y_true=y, y_pred=op1, debug=False)
+        return self.__error(op, y), acc
 
     def __predict(self, x, debug=False):
         """
@@ -364,9 +407,9 @@ class NeuralNet:
         :return:
         """
         if type(x) is pd.Series:
-            x = self.__preprocess_row(x)
+            # x = self.__preprocess_row(x)
             x = x.to_numpy()
-            x = self.min_max_scaler.transform([x]).reshape((-1, 1))
+            x = self.scaler.transform([x]).reshape((-1, 1))
         ip_o = []
         for i in range(len(self.input_layer)):
             ip_o.append(self.input_layer[i].output([x[i]]))
@@ -402,7 +445,10 @@ class NeuralNet:
         return o
 
     def predict(self, x):
-        return 1 if self.__predict(x) > 0.5 else 0
+        if self.activation_function == "sigmoid":
+            return 1 if self.__predict(x) > 0.5 else 0
+        elif self.activation_function == "tanh":
+            return 1 if self.__predict(x) > 0 else 0
 
 
 if __name__ == "__main__":
