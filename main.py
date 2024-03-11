@@ -30,20 +30,34 @@ def load_data(path, target_col="", train_size=None):
 
 
 if __name__ == '__main__':
-    # Heart disease dataset
+    print("Heart disease dataset")
     train_df, val_df = load_data('data/heart.csv',
                                  target_col='target')
 
     nn1 = NeuralNet(activation_function="sigmoid")
     nn1.train(training_data=train_df, test_data=val_df,
               learning_rate=0.05, epochs=100, plot_suffix="heart")
-    nn1.test()
 
-    nn3 = NeuralNet(activation_function="sigmoid")
-    nn3.train(training_data=train_df, test_data=val_df,
+    nn2 = NeuralNet(activation_function="sigmoid")
+    nn2.train(training_data=train_df, test_data=val_df,
               learning_rate=0.01, epochs=100, optimizer="momentum", plot_suffix="heart")
-    nn3.test()
-    # Bank churn dataset
+
+    print("Breast Cancer dataset")
+    train_df, val_df = load_data('data/breast-cancer.csv', target_col='diagnosis')
+    train_df.drop('id', axis=1, inplace=True)
+    val_df.drop('id', axis=1, inplace=True)
+    train_df['diagnosis'] = (train_df['diagnosis'] == 'M').astype(int)
+    val_df['diagnosis'] = (val_df['diagnosis'] == 'M').astype(int)
+
+    nn3 = NeuralNet(activation_function="sigmoid", hidden_layer_size=[20, 13, 9])
+    nn3.train(training_data=train_df, test_data=val_df,
+              learning_rate=0.05, epochs=200, plot_suffix="cancer")
+
+    nn4 = NeuralNet(activation_function="sigmoid", hidden_layer_size=[20, 13, 9])
+    nn4.train(training_data=train_df, test_data=val_df,
+              learning_rate=0.05, epochs=100, optimizer="momentum", plot_suffix="cancer")
+
+    print("Bank churn dataset")
     train_df, val_df = load_data('data/Churn_Modelling.csv', target_col='Exited')
     train_df.drop(["RowNumber", "CustomerId", "Surname"], axis=1, inplace=True, errors="ignore")
     val_df.drop(["RowNumber", "CustomerId", "Surname"], axis=1, inplace=True, errors="ignore")
@@ -58,10 +72,8 @@ if __name__ == '__main__':
 
     nn5 = NeuralNet(activation_function="sigmoid", hidden_layer_size=[10, 7, 5])
     nn5.train(training_data=train_df, test_data=val_df,
-              learning_rate=0.1, epochs=100, plot_suffix="bank")
-    nn5.test()
+              learning_rate=0.01, epochs=100, plot_suffix="bank")
 
-    nn7 = NeuralNet(activation_function="sigmoid", hidden_layer_size=[10, 7, 5])
-    nn7.train(training_data=train_df, test_data=val_df,
+    nn6 = NeuralNet(activation_function="sigmoid", hidden_layer_size=[10, 7, 5])
+    nn6.train(training_data=train_df, test_data=val_df,
               learning_rate=0.01, epochs=100, optimizer="momentum", plot_suffix="bank")
-    nn7.test()

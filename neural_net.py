@@ -85,9 +85,7 @@ class NeuralNet:
         :param hidden_layer_size:
         """
         if hidden_layer_size is None:
-            # hidden_layer_size = [18, 14, 12]
             hidden_layer_size = [9, 6, 4]
-            # hidden_layer_size = [20, 10, 5]
         self.activation_function = activation_function
         self.input_layer_size = input_layer_size
         self.hidden_layer_size = hidden_layer_size
@@ -183,12 +181,8 @@ class NeuralNet:
                 fan_out = self.hidden_layer_size[hidden_cnt+1] if hidden_cnt + 1 < self.hidden_layer_count else 1
                 for cnt in range(len(prev_layer)):
                     p = prev_layer[cnt].name
-                    # self.W[f"hidden_{hidden_cnt}_{i}_{cnt}"] = random_list(1)[0]
-                    # self.W[f"w_{self.neuron_count}_{p}"] = random_list(1)[0]
                     self.W[f"w_{self.neuron_count}_{p}"] = xavier_uniform_init(fan_in=len(prev_layer),
                                                                                fan_out=fan_out)[0]
-                # self.W[f"w_{self.neuron_count}_b"] = random_list(1)[0]
-                # self.W[f"w_{self.neuron_count}_b"] = xavier_uniform_init(fan_in=len(prev_layer), fan_out=fan_out)[0]
                 self.W[f"w_{self.neuron_count}_b"] = 1
                 self.neuron_count += 1
             self.hidden_layer.append(hidden_layer)
@@ -204,11 +198,8 @@ class NeuralNet:
                    name=self.neuron_count, bias=1)
         ]
         self.W[f"w_{self.neuron_count}_b"] = 1
-        # self.W[f"w_{self.neuron_count}_b"] = xavier_uniform_init(fan_in=len(self.hidden_layer[::-1][0]),
-        #                                                         fan_out=1)[0]
         for i in range(len(self.hidden_layer[-1])):
             p = self.hidden_layer[-1][i].name
-            # self.W[f"w_{self.neuron_count}_{p}"] = random_list(1)[0]
             self.W[f"w_{self.neuron_count}_{p}"] = xavier_uniform_init(fan_in=len(self.hidden_layer[::-1][0]),
                                                                        fan_out=1)[0]
         self.neuron_count += 1
@@ -236,7 +227,6 @@ class NeuralNet:
         activation_function_prime = globals()[f"{self.activation_function}_prime"]
         self.training_data = training_data
         self.test_data = test_data
-        # self.__preprocess_data()
         # Create Neural network structure
         self.__create_input_layer()
         self.__default_hidden_layer()
@@ -311,7 +301,6 @@ class NeuralNet:
                                                                              input_neuron.y)
                         dw[f"w_{hidden_neuron.name}_b"] = (learning_rate *
                                                            d[f"d_{hidden_neuron.name}"] * hidden_neuron.bias)
-                # print(dw)
                 for key in dw:
                     if optimizer == "momentum":
                         if key in v_t:
@@ -336,7 +325,6 @@ class NeuralNet:
                 if self.activation_function == "sigmoid":
                     o1.append(1 if v > 0.4 else 0)
             self.acc_viz.append((epoch+1, self.__performance(y, o1), t_acc))
-            # r_acc = self.__print_performance(y, o1, debug=False)
         end_time = 'Time elapsed (hh:mm:ss) {}'.format(datetime.now() - start_time)
         print(f"Training Accuracy: {self.acc_viz[-1][1]}\n"
               f"Test Accuracy: {self.acc_viz[-1][2]}\n"
@@ -346,7 +334,6 @@ class NeuralNet:
     @staticmethod
     def plot_loss(loss_viz, acc_viz, suffix=""):
         df = pd.DataFrame(loss_viz, columns=['Epochs', 'Training loss', 'Validation loss'])
-        # df = df.astype({"Training loss": np.float64, "Validation loss": np.float64})
         from matplotlib import pyplot as plt
         fig1 = plt.figure(figsize=(10, 6))
         ax = fig1.add_subplot(1, 1, 1)
@@ -395,7 +382,6 @@ class NeuralNet:
         :return:
         """
         if type(x) is pd.Series:
-            # x = self.__preprocess_row(x)
             x = x.to_numpy()
             x = self.scaler.transform([x]).reshape((-1, 1))
         ip_o = []

@@ -25,6 +25,14 @@ or a new one. Some good resources for gradient descent optimizers are:
 - You have to tune model parameters like learning rate, activation functions, etc. Report your results in a tabular format, with a column indicating the parameters used, a column for training accuracy, and one for test accuracy.
 
 ### Dataset: 
+#### Dataset 1: Heart disease(Processed Cleveland Dataset)
+- Source: [Cleveland Heart Disease Dataset](https://www.kaggle.com/datasets/johnsmith88/heart-disease-dataset/data)
+- Description:
+
+#### Dataset 2: Breast Cancer
+- Source: [Breast Cancer Dataset](https://www.kaggle.com/datasets/yasserh/breast-cancer-dataset)
+
+#### Dataset 3: Bank Churn Dataset
 - Source: [Bank Churn Modelling](https://www.kaggle.com/datasets/filippoo/deep-learning-az-ann/download?datasetVersionNumber=1)
 - Description:
   A bank is investigating a very high rate of customer leaving the bank. Here is a 10.000 records dataset to investigate and predict which of the customers are more likely to leave the bank soon.
