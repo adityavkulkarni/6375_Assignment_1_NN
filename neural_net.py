@@ -1,9 +1,9 @@
 import sys
 import time
-from datetime import datetime
-
 import numpy
 import pandas as pd
+import matplotlib.pyplot as plt
+from datetime import datetime
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.metrics import accuracy_score
 
@@ -84,6 +84,8 @@ class NeuralNet:
         :param input_layer_size:
         :param hidden_layer_size:
         """
+        self.optimizer = None
+        self.learning_rate = None
         if hidden_layer_size is None:
             hidden_layer_size = [9, 6, 4]
         self.activation_function = activation_function
@@ -194,7 +196,7 @@ class NeuralNet:
         :return:
         """
         self.output_layer = [
-            Neuron(activation_function=self.activation_function,
+            Neuron(activation_function="sigmoid",
                    name=self.neuron_count, bias=1)
         ]
         self.W[f"w_{self.neuron_count}_b"] = 1
@@ -256,7 +258,7 @@ class NeuralNet:
                 dw = {}
                 # Output layer d
                 output_neuron = self.output_layer[0]
-                d[f"d_{output_neuron.name}"] = (activation_function_prime(output_neuron.y) *
+                d[f"d_{output_neuron.name}"] = (sigmoid_prime(output_neuron.y) *
                                                 (y[i] - output_neuron.y))
                 # Output layer W update and hidden layer d
                 for hidden_neuron in self.hidden_layer[::-1][0]:
@@ -322,31 +324,35 @@ class NeuralNet:
             self.loss_viz.append((epoch+1, s, t))
             o1 = []
             for v in op:
-                if self.activation_function == "sigmoid":
-                    o1.append(1 if v > 0.4 else 0)
+                o1.append(1 if v > 0.6 else 0)
             self.acc_viz.append((epoch+1, self.__performance(y, o1), t_acc))
         end_time = 'Time elapsed (hh:mm:ss) {}'.format(datetime.now() - start_time)
         print(f"Training Accuracy: {self.acc_viz[-1][1]}\n"
               f"Test Accuracy: {self.acc_viz[-1][2]}\n"
               f"Training Time: {end_time.split('.')[0]}\n")
+        self.learning_rate = learning_rate
+        self.optimizer = optimizer
         self.plot_loss(self.loss_viz, self.acc_viz, f"{self.activation_function}_{optimizer}_{plot_suffix}")
 
-    @staticmethod
-    def plot_loss(loss_viz, acc_viz, suffix=""):
+    def plot_loss(self, loss_viz, acc_viz, suffix=""):
         df = pd.DataFrame(loss_viz, columns=['Epochs', 'Training loss', 'Validation loss'])
-        from matplotlib import pyplot as plt
-        fig1 = plt.figure(figsize=(10, 6))
+        fig1 = plt.figure(figsize=(19, 10))
         ax = fig1.add_subplot(1, 1, 1)
         ax.plot(df["Epochs"], df["Training loss"])
         ax.plot(df["Epochs"], df["Validation loss"])
 
         plt.xlabel("Epochs")
-        plt.legend(["Training loss", "Validation loss"])
+        plt.legend(["Training Loss", "Validation Loss"])
         plt.title("Loss vs Epochs")
-        fig1.savefig(f"./out/loss_{suffix}_{time.time()}.png")
+        txt = (f"Dataset: {suffix.split('_')[-1]} | Learning Rate: {self.learning_rate} | "
+               f"Activation Function: {self.activation_function} | Optimizer: {self.optimizer}")
+        plt.figtext(0.5, 0.01,
+                    txt + "\nFinal Loss: Training={:.2f} Validation={:.2f}".format(loss_viz[-1][1], loss_viz[-1][2]),
+                    wrap=True, horizontalalignment='center', fontsize=12)
+        fig1.savefig(f"./out/{suffix.split('_')[-1]}/loss_{suffix}_{time.time()}.png")
 
         df = pd.DataFrame(acc_viz, columns=['Epochs', 'Training Accuracy', 'Validation Accuracy'])
-        fig2 = plt.figure(figsize=(10, 6))
+        fig2 = plt.figure(figsize=(19, 10))
         ax = fig2.add_subplot(1, 1, 1)
         ax.plot(df["Epochs"], df["Training Accuracy"])
         ax.plot(df["Epochs"], df["Validation Accuracy"])
@@ -354,7 +360,11 @@ class NeuralNet:
         plt.xlabel("Epochs")
         plt.legend(["Training Accuracy", "Validation Accuracy"])
         plt.title("Accuracy vs Epochs")
-        fig2.savefig(f"./out/acc_{suffix}_{time.time()}.png")
+        plt.figtext(0.5, 0.01,
+                    txt + "\nFinal Accuracy: Training={:.2f} Validation={:.2f}".format(acc_viz[-1][1], acc_viz[-1][2]),
+                    wrap=True, horizontalalignment='center', fontsize=12)
+        fig2.savefig(f"./out/{suffix.split('_')[-1]}/acc_{suffix}_{time.time()}.png")
+        plt.close()
 
     def test(self):
         """
@@ -369,8 +379,7 @@ class NeuralNet:
         op = []
         for i in range(len(x)):
             op.append(self.__predict(x[i]))
-            if self.activation_function == "sigmoid":
-                op1.append(1 if self.__predict(x[i]) > 0.4 else 0)
+            op1.append(1 if self.__predict(x[i]) > 0.6 else 0)
         acc = self.__performance(y_true=y, y_pred=op1)
         return self.__error(op, y), acc
 
@@ -419,10 +428,7 @@ class NeuralNet:
         return o
 
     def predict(self, x):
-        if self.activation_function == "sigmoid":
-            return 1 if self.__predict(x) > 0.5 else 0
-        elif self.activation_function == "tanh":
-            return 1 if self.__predict(x) > 0 else 0
+        return 1 if self.__predict(x) > 0.5 else 0
 
 
 if __name__ == "__main__":

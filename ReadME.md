@@ -1,6 +1,19 @@
 # CS6375 - Machine Learning
 ## Assignment-1 Part 2
-
+___
+### Table of Contents:
+<!-- TOC -->
+* [CS6375 - Machine Learning](#cs6375---machine-learning)
+  * [Assignment-1 Part 2](#assignment-1-part-2)
+    * [Problem Statement:](#problem-statement)
+    * [Dataset:](#dataset-)
+      * [Dataset 1: Heart disease(Processed Cleveland Dataset)](#dataset-1-heart-diseaseprocessed-cleveland-dataset)
+      * [Dataset 2: Breast Cancer](#dataset-2-breast-cancer)
+      * [Dataset 3: Bank Churn Dataset](#dataset-3-bank-churn-dataset)
+    * [Execution Instructions:](#execution-instructions)
+    * [File Structure:](#file-structure)
+<!-- TOC -->
+___
 ### Problem Statement:
 In this part, you will code a neural network (NN) having at least one hidden layers, besides the input and output layers. You are required to pre-process the data and then run the processed data through your neural net. Below are the requirements and suggested steps of the program.
 
@@ -23,46 +36,42 @@ or a new one. Some good resources for gradient descent optimizers are:
 - Code a method for creating a neural net model from the training part of the dataset. Report the training accuracy.
 - Apply the trained model on the test part of the dataset. Report the test accuracy.
 - You have to tune model parameters like learning rate, activation functions, etc. Report your results in a tabular format, with a column indicating the parameters used, a column for training accuracy, and one for test accuracy.
-
+___
 ### Dataset: 
 #### Dataset 1: Heart disease(Processed Cleveland Dataset)
 - Source: [Cleveland Heart Disease Dataset](https://www.kaggle.com/datasets/johnsmith88/heart-disease-dataset/data)
-- Description:
+- Description: 
+  This is a preprocessed subset of UCI Heart disease dataset.
 
 #### Dataset 2: Breast Cancer
 - Source: [Breast Cancer Dataset](https://www.kaggle.com/datasets/yasserh/breast-cancer-dataset)
+- Description: 
+  Biopsy features for classification of 569 malignant (cancer) and benign (not cancer) breast masses.
 
 #### Dataset 3: Bank Churn Dataset
 - Source: [Bank Churn Modelling](https://www.kaggle.com/datasets/filippoo/deep-learning-az-ann/download?datasetVersionNumber=1)
 - Description:
   A bank is investigating a very high rate of customer leaving the bank. Here is a 10.000 records dataset to investigate and predict which of the customers are more likely to leave the bank soon.
-  The data has following features:
-       
-     |   | CreditScore | Age | Tenure | Balance | NumOfProducts | HasCrCard | IsActiveMember | EstimatedSalary | Exited | 
-     |--|---|---|---|---|---|---|---|---|---|
-     | count | 10000.000000 | 10000.000000 | 10000.000000 | 10000.000000 | 10000.000000 | 10000.00000 | 10000.000000 | 10000.000000 | 10000.000000 | 
-     | mean | 650.528800 | 38.921800 | 5.012800 | 76485.889288 | 1.530200 | 0.70550 | 0.515100 | 100090.239881 | 0.203700 | 
-     | std | 96.653299 | 10.487806 | 2.892174 | 62397.405202 | 0.581654 | 0.45584 | 0.499797 | 57510.492818 | 0.402769 | 
-     | min | 350.000000 | 18.000000 | 0.000000 | 0.000000 | 1.000000 | 0.00000 | 0.000000 | 11.580000 | 0.000000 | 
-     | 25% | 584.000000 | 32.000000 | 3.000000 | 0.000000 | 1.000000 | 0.00000 | 0.000000 | 51002.110000 | 0.000000 | 
-     | 50% | 652.000000 | 37.000000 | 5.000000 | 97198.540000 | 1.000000 | 1.00000 | 1.000000 | 100193.915000 | 0.000000 | 
-     | 75% | 718.000000 | 44.000000 | 7.000000 | 127644.240000 | 2.000000 | 1.00000 | 1.000000 | 149388.247500 | 0.000000 | 
-     | max | 850.000000 | 92.000000 | 10.000000 | 250898.090000 | 4.000000 | 1.00000 | 1.000000 | 199992.480000 | 1.000000 |
-
-
+___
 ### Execution Instructions:
+- Execution:
+  ```bash
+  python main.py --dataset <bank|cancer|heart|all> --activation <sigmoid|tanh|relu|all> --optimizer <none|momentum|all>
+  ```
+- All necessary packages are listed in [requirements.txt](requirements.txt)  
 
+___
 ### File Structure:
-``` .
-├── ReadME.md
-├── bu.py.bu : backup file
-├── data
-│   ├── Churn_Modelling.csv : dataset
-│   └── sample.csv : sample dataset
-├── eda.ipynb : notebook for data exploration and misc tasks 
-├── main.py : main file
-├── neural_net.py : file containing ANN and related code
-├── nn-enhanced.pdf : assignment description
-├── out : directory for storing output
-└── utils.py : additional utils required for ANN
-```
+
+- ReadME.md 
+- [bu.py.bu](bu.py.bu) : backup file 
+- [data](data): directory for datasets 
+- [eda.ipynb](eda.ipynb) : notebook for data exploration and misc tasks  
+- [main.py](main.py) : main file 
+- [neural_net.py](neural_net.py) : file containing ANN and related code 
+- [nn-enhanced.pdf](nn-enhanced.pdf) : assignment description 
+- [out](out) : directory for storing output 
+  - [heart](out/heart): directory for graphs of heart dataset 
+  - [cancer](out/cancer): directory for graphs of cancer dataset 
+  - [bank](out/bank): directory for graphs of bank dataset 
+- [utils.py](utils.py) : additional utils required for ANN 
