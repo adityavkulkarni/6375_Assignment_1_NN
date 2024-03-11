@@ -30,6 +30,19 @@ def load_data(path, target_col="", train_size=None):
 
 
 if __name__ == '__main__':
+    # Heart disease dataset
+    train_df, val_df = load_data('data/heart.csv',
+                                 target_col='target')
+
+    nn1 = NeuralNet(activation_function="sigmoid")
+    nn1.train(training_data=train_df, test_data=val_df,
+              learning_rate=0.05, epochs=100, plot_suffix="heart")
+    nn1.test()
+
+    nn3 = NeuralNet(activation_function="sigmoid")
+    nn3.train(training_data=train_df, test_data=val_df,
+              learning_rate=0.01, epochs=100, optimizer="momentum", plot_suffix="heart")
+    nn3.test()
     # Bank churn dataset
     train_df, val_df = load_data('data/Churn_Modelling.csv', target_col='Exited')
     train_df.drop(["RowNumber", "CustomerId", "Surname"], axis=1, inplace=True, errors="ignore")
@@ -45,24 +58,10 @@ if __name__ == '__main__':
 
     nn5 = NeuralNet(activation_function="sigmoid", hidden_layer_size=[10, 7, 5])
     nn5.train(training_data=train_df, test_data=val_df,
-              learning_rate=0.1, epochs=100)
+              learning_rate=0.1, epochs=100, plot_suffix="bank")
     nn5.test()
 
     nn7 = NeuralNet(activation_function="sigmoid", hidden_layer_size=[10, 7, 5])
     nn7.train(training_data=train_df, test_data=val_df,
-              learning_rate=0.01, epochs=100, optimizer="momentum")
+              learning_rate=0.01, epochs=100, optimizer="momentum", plot_suffix="bank")
     nn7.test()
-
-    # Heart disease dataset
-    train_df, val_df = load_data('data/heart_disease_health_indicators_BRFSS2015.csv',
-                                  target_col='HeartDiseaseorAttack')
-
-    nn1 = NeuralNet(activation_function="sigmoid")
-    nn1.train(training_data=train_df, test_data=val_df,
-              learning_rate=0.01, epochs=50)
-    nn1.test()
-
-    nn3 = NeuralNet(activation_function="sigmoid")
-    nn3.train(training_data=train_df, test_data=val_df,
-              learning_rate=0.01, epochs=50, optimizer="momentum")
-    nn3.test()

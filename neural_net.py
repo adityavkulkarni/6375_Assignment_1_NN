@@ -4,7 +4,7 @@ from datetime import datetime
 
 import numpy
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder, StandardScaler, MinMaxScaler, RobustScaler
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.metrics import accuracy_score
 
 from utils import *
@@ -86,7 +86,7 @@ class NeuralNet:
         """
         if hidden_layer_size is None:
             # hidden_layer_size = [18, 14, 12]
-            hidden_layer_size = [14, 8, 5]
+            hidden_layer_size = [9, 6, 4]
             # hidden_layer_size = [20, 10, 5]
         self.activation_function = activation_function
         self.input_layer_size = input_layer_size
@@ -120,12 +120,9 @@ class NeuralNet:
             e += abs(t[i] - o[i]) ** 2
         return 0.5 * e / len(t)
 
-    def __print_performance(self, y_true, y_pred, debug=None):
-        if debug is None:
-            debug = self.debug
+    @staticmethod
+    def __performance(y_true, y_pred):
         acc = accuracy_score(y_true, y_pred)
-        print_d(f"Test Accuracy: {acc}",
-                debug=debug)
         return acc
 
     """def __preprocess_data(self):
@@ -188,7 +185,8 @@ class NeuralNet:
                     p = prev_layer[cnt].name
                     # self.W[f"hidden_{hidden_cnt}_{i}_{cnt}"] = random_list(1)[0]
                     # self.W[f"w_{self.neuron_count}_{p}"] = random_list(1)[0]
-                    self.W[f"w_{self.neuron_count}_{p}"] = xavier_uniform_init(fan_in=len(prev_layer), fan_out=fan_out)[0]
+                    self.W[f"w_{self.neuron_count}_{p}"] = xavier_uniform_init(fan_in=len(prev_layer),
+                                                                               fan_out=fan_out)[0]
                 # self.W[f"w_{self.neuron_count}_b"] = random_list(1)[0]
                 # self.W[f"w_{self.neuron_count}_b"] = xavier_uniform_init(fan_in=len(prev_layer), fan_out=fan_out)[0]
                 self.W[f"w_{self.neuron_count}_b"] = 1
@@ -212,10 +210,10 @@ class NeuralNet:
             p = self.hidden_layer[-1][i].name
             # self.W[f"w_{self.neuron_count}_{p}"] = random_list(1)[0]
             self.W[f"w_{self.neuron_count}_{p}"] = xavier_uniform_init(fan_in=len(self.hidden_layer[::-1][0]),
-                                                                 fan_out=1)[0]
+                                                                       fan_out=1)[0]
         self.neuron_count += 1
 
-    def train(self, training_data, test_data, learning_rate=0.5, epochs=100, optimizer="None"):
+    def train(self, training_data, test_data, learning_rate=0.5, epochs=100, optimizer="None", plot_suffix=""):
         """
         Train the neural network
         :param training_data:
@@ -223,6 +221,7 @@ class NeuralNet:
         :param learning_rate:
         :param epochs:
         :param optimizer:
+        :param plot_suffix:
         :return:
         """
         print(f"Training neural network with:\n"
@@ -246,18 +245,10 @@ class NeuralNet:
         training_data = self.training_data.to_numpy()
         x = np.array([sublist[:-1] for sublist in training_data])
         y = np.array([sublist[-1] for sublist in training_data])
-        if self.activation_function == "tanh":
-            yy = []
-            for b in y:
-                if b:
-                  yy.append(1)
-                else:
-                    yy.append(-1)
-            y = np.array(yy)
         self.scaler = StandardScaler()
         self.scaler.fit(x)
         x = self.scaler.transform(x)
-        t, t_acc = self.test(debug=False)
+        t, t_acc = self.test()
         print(f"Test Accuracy: {t_acc}")
         for epoch in range(epochs):
             op = []
@@ -333,7 +324,7 @@ class NeuralNet:
 
             # Printing and Plotting
             s = self.__error(op, y)
-            t, t_acc = self.test(debug=False)
+            t, t_acc = self.test()
             print(f"\rEpoch: {epoch + 1}{' '*(3 - len(str(epoch+1)))} " 
                   f"[{u'=' * 40}] {len(x)}/{len(x)}   "
                   f"Training Loss: {'{:6.5f}'.format(s)}   "
@@ -344,13 +335,13 @@ class NeuralNet:
             for v in op:
                 if self.activation_function == "sigmoid":
                     o1.append(1 if v > 0.4 else 0)
-            self.acc_viz.append((epoch+1, self.__print_performance(y, o1, debug=False), t_acc))
+            self.acc_viz.append((epoch+1, self.__performance(y, o1), t_acc))
             # r_acc = self.__print_performance(y, o1, debug=False)
-        end_time = 'Time elapsed (hh:mm:ss.ms) {}'.format(datetime.now() - start_time )
+        end_time = 'Time elapsed (hh:mm:ss) {}'.format(datetime.now() - start_time)
         print(f"Training Accuracy: {self.acc_viz[-1][1]}\n"
               f"Test Accuracy: {self.acc_viz[-1][2]}\n"
-              f"Training Time: {end_time}\n")
-        self.plot_loss(self.loss_viz, self.acc_viz, f"{self.activation_function}_{optimizer}")
+              f"Training Time: {end_time.split('.')[0]}\n")
+        self.plot_loss(self.loss_viz, self.acc_viz, f"{self.activation_function}_{optimizer}_{plot_suffix}")
 
     @staticmethod
     def plot_loss(loss_viz, acc_viz, suffix=""):
@@ -378,13 +369,11 @@ class NeuralNet:
         plt.title("Accuracy vs Epochs")
         fig2.savefig(f"./out/acc_{suffix}_{time.time()}.png")
 
-    def test(self, debug=None):
+    def test(self):
         """
         Test the neural network on the test/ validation set
         :return:
         """
-        if debug is None:
-            debug = self.debug
         test_data = self.test_data.to_numpy()
         x = np.array([sublist[:-1] for sublist in test_data])
         y = np.array([sublist[-1] for sublist in test_data])
@@ -395,8 +384,7 @@ class NeuralNet:
             op.append(self.__predict(x[i]))
             if self.activation_function == "sigmoid":
                 op1.append(1 if self.__predict(x[i]) > 0.4 else 0)
-        print_d(f"Test Loss: {self.__error(op, y)}", debug=False)
-        acc = self.__print_performance(y_true=y, y_pred=op1, debug=False)
+        acc = self.__performance(y_true=y, y_pred=op1)
         return self.__error(op, y), acc
 
     def __predict(self, x, debug=False):
