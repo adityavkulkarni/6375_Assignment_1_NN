@@ -99,6 +99,16 @@ if __name__ == '__main__':
                 nn_t_m.train(training_data=train_df, test_data=val_df,
                              learning_rate=0.01, epochs=100, optimizer="momentum", plot_suffix="heart")
                 d["Tanh Momentum"] = nn_t_m.test()[1]
+        if RELU:
+            nn_r = NeuralNet(activation_function="relu")
+            nn_r.train(training_data=train_df, test_data=val_df,
+                       learning_rate=0.05, epochs=100, plot_suffix="heart")
+            d["ReLU"] = nn_r.test()[1]
+            if MOMENTUM:
+                nn_r_m = NeuralNet(activation_function="relu")
+                nn_r_m.train(training_data=train_df, test_data=val_df,
+                             learning_rate=0.01, epochs=100, optimizer="momentum", plot_suffix="heart")
+                d["ReLU Momentum"] = nn_r_m.test()[1]
         compare.append(d)
 
     if CANCER:
@@ -130,6 +140,16 @@ if __name__ == '__main__':
                 nn_t_m.train(training_data=train_df, test_data=val_df,
                              learning_rate=0.01, epochs=100, optimizer="momentum", plot_suffix="cancer")
                 d["Tanh Momentum"] = nn_t_m.test()[1]
+        if RELU:
+            nn_r = NeuralNet(activation_function="relu")
+            nn_r.train(training_data=train_df, test_data=val_df,
+                       learning_rate=0.05, epochs=100, plot_suffix="cancer")
+            d["ReLU"] = nn_r.test()[1]
+            if MOMENTUM:
+                nn_r_m = NeuralNet(activation_function="relu")
+                nn_r_m.train(training_data=train_df, test_data=val_df,
+                             learning_rate=0.01, epochs=100, optimizer="momentum", plot_suffix="cancer")
+                d["ReLU Momentum"] = nn_r_m.test()[1]
         compare.append(d)
 
     if BANK:
@@ -167,6 +187,16 @@ if __name__ == '__main__':
                 nn_t_m.train(training_data=train_df, test_data=val_df,
                              learning_rate=0.01, epochs=50, optimizer="momentum", plot_suffix="bank")
                 d["Tanh Momentum"] = nn_t_m.test()[1]
+        if RELU:
+            nn_r = NeuralNet(activation_function="relu")
+            nn_r.train(training_data=train_df, test_data=val_df,
+                       learning_rate=0.05, epochs=50, plot_suffix="bank")
+            d["ReLU"] = nn_r.test()[1]
+            if MOMENTUM:
+                nn_r_m = NeuralNet(activation_function="relu")
+                nn_r_m.train(training_data=train_df, test_data=val_df,
+                             learning_rate=0.01, epochs=50, optimizer="momentum", plot_suffix="bank")
+                d["ReLU Momentum"] = nn_r_m.test()[1]
         compare.append(d)
     compare = pd.DataFrame(compare)
     compare.set_index('Dataset', inplace=True)
