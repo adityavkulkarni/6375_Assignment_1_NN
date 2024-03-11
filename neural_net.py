@@ -125,33 +125,6 @@ class NeuralNet:
         acc = accuracy_score(y_true, y_pred)
         return acc
 
-    """def __preprocess_data(self):
-        '''
-        Function for preprocessing training and test data
-        :return:
-        '''
-        self.training_data.drop(["RowNumber", "CustomerId", "Surname"], axis=1, inplace=True, errors="ignore")
-        self.test_data.drop(["RowNumber", "CustomerId", "Surname"], axis=1, inplace=True, errors="ignore")
-        self.encoder_geo = LabelEncoderExt()
-        self.encoder_gender = LabelEncoderExt()
-        self.encoder_geo.fit(self.training_data["Geography"])
-        self.encoder_gender.fit(self.training_data["Gender"])
-        self.training_data["Gender"] = self.encoder_gender.transform(self.training_data["Gender"])
-        self.training_data["Geography"] = self.encoder_geo.transform(self.training_data["Geography"])
-
-        self.test_data["Gender"] = self.encoder_gender.transform(self.test_data["Gender"])
-        self.test_data["Geography"] = self.encoder_geo.transform(self.test_data["Geography"])
-
-    def __preprocess_row(self, row):
-        '''
-        Preprocess a single row of data
-        :param row:
-        :return:
-        '''
-        row.drop(["RowNumber", "CustomerId", "Surname"], inplace=True, errors="ignore")
-        row["Gender"] = self.encoder_gender.transform([row["Gender"]])[0]
-        row["Geography"] = self.encoder_geo.transform([row["Geography"]])[0]
-        return row"""
 
     def __create_input_layer(self):
         """
@@ -336,7 +309,7 @@ class NeuralNet:
 
     def plot_loss(self, loss_viz, acc_viz, suffix=""):
         df = pd.DataFrame(loss_viz, columns=['Epochs', 'Training loss', 'Validation loss'])
-        fig1 = plt.figure(figsize=(16, 9))
+        fig1 = plt.figure(figsize=(12, 7))
         ax = fig1.add_subplot(1, 1, 1)
         ax.plot(df["Epochs"], df["Training loss"])
         ax.plot(df["Epochs"], df["Validation loss"])
@@ -348,11 +321,11 @@ class NeuralNet:
                f"Activation Function: {self.activation_function} | Optimizer: {self.optimizer}")
         plt.figtext(0.5, 0.01,
                     txt + "\nFinal Loss: Training={:.2f} Validation={:.2f}".format(loss_viz[-1][1], loss_viz[-1][2]),
-                    wrap=True, horizontalalignment='center', fontsize=12)
+                    wrap=True, horizontalalignment='center', fontsize=10)
         fig1.savefig(f"./out/{suffix.split('_')[-1]}/loss_{suffix}_{time.time()}.png")
 
         df = pd.DataFrame(acc_viz, columns=['Epochs', 'Training Accuracy', 'Validation Accuracy'])
-        fig2 = plt.figure(figsize=(16, 9))
+        fig2 = plt.figure(figsize=(12, 7))
         ax = fig2.add_subplot(1, 1, 1)
         ax.plot(df["Epochs"], df["Training Accuracy"])
         ax.plot(df["Epochs"], df["Validation Accuracy"])
@@ -362,7 +335,7 @@ class NeuralNet:
         plt.title("Accuracy vs Epochs")
         plt.figtext(0.5, 0.01,
                     txt + "\nFinal Accuracy: Training={:.2f} Validation={:.2f}".format(acc_viz[-1][1], acc_viz[-1][2]),
-                    wrap=True, horizontalalignment='center', fontsize=12)
+                    wrap=True, horizontalalignment='center', fontsize=10)
         fig2.savefig(f"./out/{suffix.split('_')[-1]}/acc_{suffix}_{time.time()}.png")
         plt.close()
 
