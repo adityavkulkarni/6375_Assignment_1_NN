@@ -128,12 +128,12 @@ if __name__ == '__main__':
             if MOMENTUM:
                 nn_s_m = NeuralNet(activation_function="sigmoid", hidden_layer_size=[20, 13, 9])
                 nn_s_m.train(training_data=train_df, test_data=val_df,
-                             learning_rate=0.05, epochs=100, optimizer="momentum", plot_suffix="cancer")
+                             learning_rate=0.08, epochs=100, optimizer="momentum", plot_suffix="cancer")
                 d["Sigmoid Momentum"] = nn_s_m.test()[1]
         if TANH:
             nn_t = NeuralNet(activation_function="tanh", hidden_layer_size=[20, 13, 9])
             nn_t.train(training_data=train_df, test_data=val_df,
-                       learning_rate=0.1, epochs=100, plot_suffix="cancer")
+                       learning_rate=0.3, epochs=100, plot_suffix="cancer")
             d["Tanh"] = nn_t.test()[1]
             if MOMENTUM:
                 nn_t_m = NeuralNet(activation_function="tanh", hidden_layer_size=[20, 13, 9])
@@ -170,12 +170,12 @@ if __name__ == '__main__':
         if SIGMOID:
             nn_s = NeuralNet(activation_function="sigmoid", hidden_layer_size=[10, 7, 5])
             nn_s.train(training_data=train_df, test_data=val_df,
-                       learning_rate=0.05, epochs=50, plot_suffix="bank")
+                       learning_rate=0.1, epochs=50, plot_suffix="bank")
             d["Sigmoid"] = nn_s.test()[1]
             if MOMENTUM:
                 nn_s_m = NeuralNet(activation_function="sigmoid", hidden_layer_size=[10, 7, 5])
                 nn_s_m.train(training_data=train_df, test_data=val_df,
-                             learning_rate=0.01, epochs=50, optimizer="momentum", plot_suffix="bank")
+                             learning_rate=0.05, epochs=50, optimizer="momentum", plot_suffix="bank")
                 d["Sigmoid Momentum"] = nn_s_m.test()[1]
         if TANH:
             nn_t = NeuralNet(activation_function="tanh", hidden_layer_size=[10, 7, 5])
@@ -190,12 +190,12 @@ if __name__ == '__main__':
         if RELU:
             nn_r = NeuralNet(activation_function="relu", hidden_layer_size=[10, 7, 5])
             nn_r.train(training_data=train_df, test_data=val_df,
-                       learning_rate=0.05, epochs=50, plot_suffix="bank")
+                       learning_rate=0.005, epochs=50, plot_suffix="bank")
             d["ReLU"] = nn_r.test()[1]
             if MOMENTUM:
                 nn_r_m = NeuralNet(activation_function="relu", hidden_layer_size=[10, 7, 5])
                 nn_r_m.train(training_data=train_df, test_data=val_df,
-                             learning_rate=0.01, epochs=50, optimizer="momentum", plot_suffix="bank")
+                             learning_rate=0.005, epochs=50, optimizer="momentum", plot_suffix="bank")
                 d["ReLU Momentum"] = nn_r_m.test()[1]
         compare.append(d)
     compare = pd.DataFrame(compare)

@@ -314,7 +314,6 @@ class NeuralNet:
         ax.plot(df["Epochs"], df["Training loss"])
         ax.plot(df["Epochs"], df["Validation loss"])
 
-        plt.xlabel("Epochs")
         plt.legend(["Training Loss", "Validation Loss"])
         plt.title("Loss vs Epochs")
         txt = (f"Dataset: {suffix.split('_')[-1]} | Learning Rate: {self.learning_rate} | "
@@ -330,7 +329,6 @@ class NeuralNet:
         ax.plot(df["Epochs"], df["Training Accuracy"])
         ax.plot(df["Epochs"], df["Validation Accuracy"])
 
-        plt.xlabel("Epochs")
         plt.legend(["Training Accuracy", "Validation Accuracy"])
         plt.title("Accuracy vs Epochs")
         plt.figtext(0.5, 0.01,
