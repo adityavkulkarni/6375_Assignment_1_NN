@@ -149,7 +149,7 @@ class NeuralNet:
                 for cnt in range(len(prev_layer)):
                     p = prev_layer[cnt].name
                     self.W[f"w_{self.neuron_count}_{p}"] = xavier_uniform_init(fan_in=len(prev_layer),
-                                                                               fan_out=fan_out)[0]
+                                                                               fan_out=fan_out)
                 self.W[f"w_{self.neuron_count}_b"] = 1
                 self.neuron_count += 1
             self.hidden_layer.append(hidden_layer)
@@ -168,7 +168,7 @@ class NeuralNet:
         for i in range(len(self.hidden_layer[-1])):
             p = self.hidden_layer[-1][i].name
             self.W[f"w_{self.neuron_count}_{p}"] = xavier_uniform_init(fan_in=len(self.hidden_layer[::-1][0]),
-                                                                       fan_out=1)[0]
+                                                                       fan_out=1)
         self.neuron_count += 1
 
     def train(self, training_data, test_data, learning_rate=0.5, epochs=100, optimizer="None", plot_suffix=""):
@@ -209,7 +209,9 @@ class NeuralNet:
         print(f"Test Accuracy: {t_acc}")
         for epoch in range(epochs):
             op = []
+            # Batch implementation
             for i in range(len(x)):
+                # Gradient Evaluation
                 # Forward Pass
                 o = self.__predict(x[i])
                 op.append(o)
@@ -225,7 +227,7 @@ class NeuralNet:
                 output_neuron = self.output_layer[0]
                 d[f"d_{output_neuron.name}"] = (sigmoid_prime(output_neuron.y) *
                                                 (y[i] - output_neuron.y))
-                # Output layer W update and hidden layer d
+                # Output layer gradient calculation and hidden layer d
                 for hidden_neuron in self.hidden_layer[::-1][0]:
                     d[f"d_{hidden_neuron.name}"] = (activation_function_prime(hidden_neuron.y) *
                                                     (self.W[f"w_{output_neuron.name}_{hidden_neuron.name}"] *
@@ -235,7 +237,6 @@ class NeuralNet:
                                                                           hidden_neuron.y)
                     dw[f"w_{hidden_neuron.name}_b"] = (learning_rate * d[f"d_{output_neuron.name}"] *
                                                        output_neuron.bias)
-
                 for inner_neuron in self.hidden_layer[::-1][1]:
                     s = 0
                     for outer_neuron in self.hidden_layer[::-1][0]:
@@ -259,8 +260,7 @@ class NeuralNet:
                             dw[f"w_{inner_neuron.name}_b"] = (learning_rate * d[f"d_{outer_neuron.name}"] *
                                                               inner_neuron.bias)
                         d[f"d_{inner_neuron.name}"] = activation_function_prime(inner_neuron.y) * s
-
-                # Hidden layer W update
+                # Hidden layer gradient calculation
                 for input_neuron in self.input_layer:
                     for hidden_neuron in self.hidden_layer[0]:
                         dw[f"w_{hidden_neuron.name}_{input_neuron.name}"] = (learning_rate *
@@ -268,6 +268,8 @@ class NeuralNet:
                                                                              input_neuron.y)
                         dw[f"w_{hidden_neuron.name}_b"] = (learning_rate *
                                                            d[f"d_{hidden_neuron.name}"] * hidden_neuron.bias)
+                # Gradient calculation over
+                # Updating weights
                 for key in dw:
                     if optimizer == "momentum":
                         if key in v_t:

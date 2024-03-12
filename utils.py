@@ -15,6 +15,10 @@ def relu(x):
     return max(0, x)
 
 
+def leaky_relu(x):
+    return x if x > 0 else 0.01 * x
+
+
 def identity(x):
     return x
 
@@ -32,6 +36,10 @@ def relu_prime(x):
     return 1 if x > 0 else 0
 
 
+def leaky_relu_prime(x):
+    return 1 if x > 0 else 0.01
+
+
 # Weight Initialization
 def random_list(length, _range=(-0.1, 0.1)):
         min_val, max_val = _range
@@ -39,5 +47,6 @@ def random_list(length, _range=(-0.1, 0.1)):
 
 
 def xavier_uniform_init(fan_in, fan_out):
-    limit = np.sqrt(3 / float(fan_in + fan_out))
-    return list(np.random.uniform(low=-limit, high=limit, size=(1,)))
+    limit = np.sqrt(6 / float(fan_in + fan_out))
+    m = list(np.random.uniform(low=-limit, high=limit, size=(10,)))[np.random.randint(0, 10)]
+    return m

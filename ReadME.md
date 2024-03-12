@@ -5,11 +5,12 @@ ___
 <!-- TOC -->
 * [CS6375 - Machine Learning](#cs6375---machine-learning)
   * [Assignment-1 Part 2](#assignment-1-part-2)
+    * [Table of Contents:](#table-of-contents)
     * [Problem Statement:](#problem-statement)
+    * [Implementation details:](#implementation-details)
     * [Dataset:](#dataset-)
       * [Dataset 1: Heart disease(Processed Cleveland Dataset)](#dataset-1-heart-diseaseprocessed-cleveland-dataset)
       * [Dataset 2: Breast Cancer](#dataset-2-breast-cancer)
-      * [Dataset 3: Bank Churn Dataset](#dataset-3-bank-churn-dataset)
     * [Execution Instructions:](#execution-instructions)
     * [File Structure:](#file-structure)
 <!-- TOC -->
@@ -36,6 +37,21 @@ or a new one. Some good resources for gradient descent optimizers are:
 - Code a method for creating a neural net model from the training part of the dataset. Report the training accuracy.
 - Apply the trained model on the test part of the dataset. Report the test accuracy.
 - You have to tune model parameters like learning rate, activation functions, etc. Report your results in a tabular format, with a column indicating the parameters used, a column for training accuracy, and one for test accuracy.
+Detailed assignment problem statement: [nn-enhanced.pdf](nn-enhanced.pdf)
+___
+### Implementation details:
+- Structure of Neural network:
+  - Input layer have units for each corresponding feature
+- Activation Functions:
+  1. sigmoid
+  2. tanh
+  3. relu
+  4. leaky relu
+- Gradient Descent:
+  - Batch gradient descent
+  - Mini batch gradient descent
+- Optimizations:
+  - Momentum
 ___
 ### Dataset: 
 #### Dataset 1: Heart disease(Processed Cleveland Dataset)
@@ -48,21 +64,16 @@ ___
 - Description: 
   Biopsy features for classification of 569 malignant (cancer) and benign (not cancer) breast masses.
 
-#### Dataset 3: Bank Churn Dataset
-- Source: [Bank Churn Modelling](https://www.kaggle.com/datasets/filippoo/deep-learning-az-ann/download?datasetVersionNumber=1)
-- Description:
-  A bank is investigating a very high rate of customer leaving the bank. Here is a 10.000 records dataset to investigate and predict which of the customers are more likely to leave the bank soon.
 ___
 ### Execution Instructions:
 - Execution:
   ```bash
-  python main.py --dataset <bank|cancer|heart|all> --activation <sigmoid|tanh|relu|all> --optimizer <none|momentum|all>
+  python main.py --dataset <cancer|heart|all> --activation <sigmoid|tanh|relu|all> --optimizer <none|momentum|all>
   ```
 - All necessary packages are listed in [requirements.txt](requirements.txt)  
 
 ___
 ### File Structure:
-
 - ReadME.md 
 - [bu.py.bu](bu.py.bu) : backup file 
 - [data](data): directory for datasets 
@@ -73,5 +84,4 @@ ___
 - [out](out) : directory for storing output 
   - [heart](out/heart): directory for graphs of heart dataset 
   - [cancer](out/cancer): directory for graphs of cancer dataset 
-  - [bank](out/bank): directory for graphs of bank dataset 
 - [utils.py](utils.py) : additional utils required for ANN 
