@@ -95,14 +95,14 @@ if __name__ == '__main__':
                              learning_rate=0.01, epochs=100, optimizer="momentum", plot_suffix="heart")
                 d["Tanh Momentum"] = nn_t_m.test()[1]
         if RELU:
-            nn_r = NeuralNet(activation_function="relu", hidden_layer_size=[9, 6, 4])
+            nn_r = NeuralNet(activation_function="relu", hidden_layer_size=[7, 3, 7])
             nn_r.train(training_data=train_df, test_data=val_df,
-                       learning_rate=0.01, epochs=100, plot_suffix="heart")
+                       learning_rate=0.03, epochs=100, plot_suffix="heart")
             d["ReLU"] = nn_r.test()[1]
             if MOMENTUM:
-                nn_r_m = NeuralNet(activation_function="relu", hidden_layer_size=[9, 6, 4])
+                nn_r_m = NeuralNet(activation_function="relu", hidden_layer_size=[7, 3, 7])
                 nn_r_m.train(training_data=train_df, test_data=val_df,
-                             learning_rate=0.005, epochs=100, optimizer="momentum", plot_suffix="heart")
+                             learning_rate=0.03, epochs=100, optimizer="momentum", plot_suffix="heart")
                 d["ReLU Momentum"] = nn_r_m.test()[1]
         compare.append(d)
 
@@ -133,17 +133,17 @@ if __name__ == '__main__':
             if MOMENTUM:
                 nn_t_m = NeuralNet(activation_function="tanh", hidden_layer_size=[20, 13, 9])
                 nn_t_m.train(training_data=train_df, test_data=val_df,
-                             learning_rate=0.05, epochs=100, optimizer="momentum", plot_suffix="cancer")
+                             learning_rate=0.005, epochs=100, optimizer="momentum", plot_suffix="cancer")
                 d["Tanh Momentum"] = nn_t_m.test()[1]
         if RELU:
-            nn_r = NeuralNet(activation_function="relu", hidden_layer_size=[21, 11, 7])
+            nn_r = NeuralNet(activation_function="relu", hidden_layer_size=[21, 7, 3])
             nn_r.train(training_data=train_df, test_data=val_df,
-                       learning_rate=0.1, epochs=100, plot_suffix="cancer")
+                       learning_rate=0.05, epochs=100, plot_suffix="cancer")
             d["ReLU"] = nn_r.test()[1]
             if MOMENTUM:
                 nn_r_m = NeuralNet(activation_function="relu", hidden_layer_size=[21, 11, 7])
                 nn_r_m.train(training_data=train_df, test_data=val_df,
-                             learning_rate=0.05, epochs=100, optimizer="momentum", plot_suffix="cancer")
+                             learning_rate=0.02, epochs=100, optimizer="momentum", plot_suffix="cancer")
                 d["ReLU Momentum"] = nn_r_m.test()[1]
         compare.append(d)
 
@@ -180,7 +180,7 @@ if __name__ == '__main__':
             if MOMENTUM:
                 nn_t_m = NeuralNet(activation_function="tanh", hidden_layer_size=[10, 7, 5])
                 nn_t_m.train(training_data=train_df, test_data=val_df,
-                             learning_rate=0.01, epochs=50, optimizer="momentum", plot_suffix="bank")
+                             learning_rate=0.005, epochs=50, optimizer="momentum", plot_suffix="bank")
                 d["Tanh Momentum"] = nn_t_m.test()[1]
         if RELU:
             nn_r = NeuralNet(activation_function="relu", hidden_layer_size=[10, 7, 5])
@@ -190,7 +190,7 @@ if __name__ == '__main__':
             if MOMENTUM:
                 nn_r_m = NeuralNet(activation_function="relu", hidden_layer_size=[10, 7, 5])
                 nn_r_m.train(training_data=train_df, test_data=val_df,
-                             learning_rate=0.005, epochs=50, optimizer="momentum", plot_suffix="bank")
+                             learning_rate=0.001, epochs=50, optimizer="momentum", plot_suffix="bank")
                 d["ReLU Momentum"] = nn_r_m.test()[1]
         compare.append(d)
     compare = pd.DataFrame(compare)
