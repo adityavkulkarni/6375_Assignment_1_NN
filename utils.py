@@ -41,9 +41,3 @@ def random_list(length, _range=(-0.1, 0.1)):
 def xavier_uniform_init(fan_in, fan_out):
     limit = np.sqrt(3 / float(fan_in + fan_out))
     return list(np.random.uniform(low=-limit, high=limit, size=(1,)))
-
-
-# Print
-def print_d(message, debug, end="\n"):
-    if debug:
-        print(f"DEBUG | {message}", end=end)

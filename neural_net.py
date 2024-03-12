@@ -44,16 +44,14 @@ class LabelEncoderExt(object):
 
 
 class Neuron:
-    def __init__(self, activation_function, name=None, bias=0, debug=False):
+    def __init__(self, activation_function, name=None, bias=0):
         """
         Class for a single neuron
         :param activation_function: Activation function: (sigmoid|tanh|relu)
         :param name: Name of neuron (optional)
-        :param debug: True for print_ding debug messages (optional, default=False)
         """
         self.activation_function = globals()[activation_function]
         self.name = name
-        self.debug = debug
         self.bias = bias
         self.net = 0
         self.y = 0
@@ -70,17 +68,14 @@ class Neuron:
         # net += (1 * self.weights[i + 1])
         self.net = net
         self.y = self.activation_function(net)
-        print_d(f"Output of {self.name} : {self.y}", self.debug)
         return self.y
 
 
 class NeuralNet:
-    def __init__(self, activation_function="sigmoid", debug=False,
-                 input_layer_size=-1, hidden_layer_size=None):
+    def __init__(self, activation_function="sigmoid", input_layer_size=-1, hidden_layer_size=None):
         """
 
         :param activation_function:
-        :param debug:
         :param input_layer_size:
         :param hidden_layer_size:
         """
@@ -92,7 +87,6 @@ class NeuralNet:
         self.input_layer_size = input_layer_size
         self.hidden_layer_size = hidden_layer_size
         self.hidden_layer_count = len(self.hidden_layer_size)
-        self.debug = debug
         self.neuron_count = 1
         self.input_layer = []
         self.hidden_layer = []
@@ -125,7 +119,6 @@ class NeuralNet:
         acc = accuracy_score(y_true, y_pred)
         return acc
 
-
     def __create_input_layer(self):
         """
         Create an input layer with number of features or given input layer size
@@ -134,7 +127,6 @@ class NeuralNet:
         if self.input_layer_size == -1:
             self.input_layer_size = len(self.training_data.columns) - 1
         for i in range(self.input_layer_size):
-            print_d(f"Added input neuron for feature {self.training_data.columns[i]}", self.debug)
             self.input_layer.append(
                 Neuron(activation_function="identity",
                        name=self.neuron_count))
@@ -354,11 +346,10 @@ class NeuralNet:
         acc = self.__performance(y_true=y, y_pred=op1)
         return self.__error(op, y), acc
 
-    def __predict(self, x, debug=False):
+    def __predict(self, x):
         """
         Give prediction for given input
         :param x:
-        :param debug:
         :return:
         """
         if type(x) is pd.Series:
@@ -395,7 +386,6 @@ class NeuralNet:
         hidden_o = hidden_o[hidden_cnt + 1]
         hidden_o.append(self.output_layer[0].bias + self.W[f"w_{self.output_layer[0].name}_b"])
         o = self.output_layer[0].output(hidden_o)
-        print_d(f"Output of neural network : {o}", debug)
         return o
 
     def predict(self, x):
@@ -404,5 +394,5 @@ class NeuralNet:
 
 if __name__ == "__main__":
     n1 = Neuron(activation_function="tanh", bias=2,
-                name="sample neuron", debug=True)
+                name="sample neuron")
     n1.output([2, 3])

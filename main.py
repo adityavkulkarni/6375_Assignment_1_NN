@@ -5,7 +5,6 @@ from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 
 from neural_net import NeuralNet, LabelEncoderExt
-from utils import print_d
 
 plt.style.use('tableau-colorblind10')
 TRAINING_RATIO = 0.75
@@ -41,12 +40,8 @@ def set_var(arguments):
 
 
 def load_data(path, target_col="", train_size=None):
-    if train_size is None:
-        train_size = TRAINING_RATIO
-    debug = train_size > 0
     data = pd.read_csv(path)
     data.dropna()
-    print_d(f"Data rows loaded: {len(data)}", debug=debug)
 
     # Splitting the data into training and test sets (adjust test_size as needed)
     X = data.drop(columns=[target_col])  # Features
@@ -92,7 +87,7 @@ if __name__ == '__main__':
         if TANH:
             nn_t = NeuralNet(activation_function="tanh", hidden_layer_size=[9, 6, 4])
             nn_t.train(training_data=train_df, test_data=val_df,
-                       learning_rate=0.1, epochs=100, plot_suffix="heart")
+                       learning_rate=0.05, epochs=100, plot_suffix="heart")
             d["Tanh"] = nn_t.test()[1]
             if MOMENTUM:
                 nn_t_m = NeuralNet(activation_function="tanh", hidden_layer_size=[9, 6, 4])
