@@ -86,3 +86,10 @@ def xavier_uniform_init(fan_in, fan_out):
     """
     limit = np.sqrt(6 / float(fan_in + fan_out))
     return list(np.random.uniform(low=-limit, high=limit, size=(10,)))[np.random.randint(0, 10)]
+
+
+def moving_average(data, alpha):
+    ema = [data[0]]
+    for i in range(1, len(data)):
+        ema.append(alpha * data[i] + (1 - alpha) * ema[-1])
+    return ema

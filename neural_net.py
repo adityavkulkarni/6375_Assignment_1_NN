@@ -1,9 +1,9 @@
 import sys
-import time
 import numpy
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
+
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.metrics import accuracy_score
 
@@ -125,7 +125,7 @@ class NeuralNet:
         return acc
 
     @staticmethod
-    def __get_batches(df, batch_size=50):
+    def __get_batches(df, batch_size=100):
         """
         Create batches from the given DataFrame.
         :param df: DataFrame to create batches from.
@@ -221,6 +221,7 @@ class NeuralNet:
         start_time = datetime.now()
         # Init
         v_t = {}
+        g = {}
         self.loss_viz = []
         self.acc_viz = []
         self.learning_rate = learning_rate
@@ -237,7 +238,7 @@ class NeuralNet:
         # Batch implementation
         batch_size = len(self.training_data)  # Batch
         if gradient == "minibatch":
-            batch_size = 50
+            batch_size = 100
         elif gradient == "stochastic":
             batch_size = 1
         batches = self.__get_batches(training_data, batch_size=batch_size)
@@ -335,6 +336,13 @@ class NeuralNet:
                         # Store current gradient in v. momentum=0.9
                         v_t[key] = 0.9 * v_t[key] + dw[key] if key in v_t else dw[key]
                         self.W[key] += v_t[key]
+                    elif optimizer == "adagrad":
+                        if key in g:
+                            g[key] += dw[key] ** 2
+                        else:
+                            g[key] = 0
+                            # self.W[key] += dw[key]
+                        self.W[key] += dw[key] / np.sqrt(g[key] + 0.000001)
                     else:
                         self.W[key] += dw[key]
 
@@ -356,7 +364,7 @@ class NeuralNet:
         print(f"Training Accuracy: {self.acc_viz[-1][1]}\n"
               f"Test Accuracy: {self.acc_viz[-1][2]}\n"
               f"Training Time: {end_time.split('.')[0]}\n")
-        self.plot_loss(self.loss_viz, self.acc_viz, f"{self.activation_function}_{optimizer}_{plot_suffix}")
+        self.plot_loss(self.loss_viz, self.acc_viz, f"{self.activation_function}_{optimizer}_{gradient}_{plot_suffix}")
         return t, t_acc, exec_time.total_seconds()
 
     def plot_loss(self, loss_viz, acc_viz, suffix=""):
@@ -374,23 +382,28 @@ class NeuralNet:
         plt.legend(["Training Loss", "Validation Loss"])
         plt.title("Loss vs Epochs")
         txt = (f"Dataset: {suffix.split('_')[-1]} | Learning Rate: {self.learning_rate} | "
-               f"Activation Function: {self.activation_function} | Optimizer: {self.optimizer} | Gradient: {self.gradient}")
+               f"Activation Function: {self.activation_function} | Optimizer: {self.optimizer} | "
+               f"Gradient: {self.gradient}")
         plt.figtext(0.5, 0.01,
                     txt + "\nFinal Loss: Training={:.2f} Validation={:.2f}".format(loss_viz[-1][1], loss_viz[-1][2]),
                     wrap=True, horizontalalignment='center', fontsize=10)
-        fig1.savefig(f"./out/{suffix.split('_')[-1]}/loss_{suffix}_{time.time()}.png")
+        fig1.savefig(f"./out/{suffix.split('_')[-1]}/loss_{suffix}.png")
 
         df = pd.DataFrame(acc_viz, columns=['Epochs', 'Training Accuracy', 'Validation Accuracy'])
         fig2 = plt.figure(figsize=(12, 7))
         ax = fig2.add_subplot(1, 1, 1)
-        ax.plot(df["Epochs"], df["Training Accuracy"])
-        ax.plot(df["Epochs"], df["Validation Accuracy"])
+        if self.gradient != "stochastic":
+            ax.plot(df["Epochs"], df["Training Accuracy"])
+            ax.plot(df["Epochs"], df["Validation Accuracy"])
+        else:
+            ax.plot(df["Epochs"], moving_average(df["Training Accuracy"], 0.1))
+            ax.plot(df["Epochs"], moving_average(df["Validation Accuracy"], 0.1))
         plt.legend(["Training Accuracy", "Validation Accuracy"])
         plt.title("Accuracy vs Epochs")
         plt.figtext(0.5, 0.01,
                     txt + "\nFinal Accuracy: Training={:.2f} Validation={:.2f}".format(acc_viz[-1][1], acc_viz[-1][2]),
                     wrap=True, horizontalalignment='center', fontsize=10)
-        fig2.savefig(f"./out/{suffix.split('_')[-1]}/acc_{suffix}_{time.time()}.png")
+        fig2.savefig(f"./out/{suffix.split('_')[-1]}/acc_{suffix}.png")
         plt.close()
 
     def test(self):

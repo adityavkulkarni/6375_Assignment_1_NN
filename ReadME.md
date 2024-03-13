@@ -60,7 +60,8 @@ ___
   - Mini batch gradient descent [[1]](#references)
   - Stochastic gradient descent [[1]](#references)
 - Optimizations:
-  - Momentum [[1]](#references)
+  1. Momentum [[1]](#references)
+  2. Adagrad [[1]](#references)[[3]](#references)
 ___
 ### Dataset: 
 #### Main dataset: Heart disease(Processed Cleveland Dataset)
@@ -106,4 +107,5 @@ ___
 ---
 ### References
 1. [An overview of gradient descent optimization algorithms](https://arxiv.org/pdf/1609.04747.pdf)
-2. [Xavier Intialization Overview](https://paperswithcode.com/method/xavier-initialization)
+2. [Xavier Initialization Overview](https://paperswithcode.com/method/xavier-initialization)
+3. [Adaptive gradient (AdaGrad) from scratch in Python](https://dmitrijskass.netlify.app/2021/04/15/adagrad-adaptive-gradient-algorithm/)

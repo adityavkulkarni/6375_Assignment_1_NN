@@ -4,7 +4,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 
-from neural_net import NeuralNet, LabelEncoderExt
+from neural_net import NeuralNet
 
 plt.style.use('tableau-colorblind10')
 TRAINING_RATIO = 0.75
@@ -33,8 +33,8 @@ if __name__ == '__main__':
                         help='Dataset to use: bank, cancer, heart, or all', default="all")
     parser.add_argument('--activation', type=str, choices=['sigmoid', 'tanh', 'relu'],
                         help='Activation function to use: sigmoid, tanh, relu', default="sigmoid")
-    parser.add_argument('--optimizer', type=str, choices=['none', 'momentum'],
-                        help='Optimizer to use: none, momentum, or all', default="none")
+    parser.add_argument('--optimizer', type=str, choices=['none', 'momentum', 'adagrad'],
+                        help='Optimizer to use: none, momentum, adagrad or all', default="none")
     parser.add_argument('--gradient', type=str, choices=['stochastic', 'batch', 'minibatch'],
                         help='Gradient descent type: batch, minibatch, stochastic',
                         default="batch")
