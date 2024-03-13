@@ -171,7 +171,7 @@ class NeuralNet:
                 neuron = Neuron(activation_function=self.activation_function,
                                 name=self.neuron_count, bias=1)
                 hidden_layer.append(neuron)
-                fan_out = self.hidden_layer_size[hidden_cnt+1] if hidden_cnt + 1 < self.hidden_layer_count else 1
+                fan_out = self.hidden_layer_size[hidden_cnt]
                 for cnt in range(len(prev_layer)):
                     p = prev_layer[cnt].name
                     # Initialise weight for each connection

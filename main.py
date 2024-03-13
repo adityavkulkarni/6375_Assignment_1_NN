@@ -45,7 +45,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     res = []
-    if args.dataset == 'all' or 'heart':
+    if args.dataset == 'all' or args.dataset == 'heart':
         print("Heart disease dataset")
         train_df, val_df = load_data('data/heart.csv',
                                      target_col='target')

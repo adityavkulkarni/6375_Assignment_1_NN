@@ -9,10 +9,11 @@ ___
     * [Problem Statement:](#problem-statement)
     * [Implementation details:](#implementation-details)
     * [Dataset:](#dataset-)
-      * [Dataset 1: Heart disease(Processed Cleveland Dataset)](#dataset-1-heart-diseaseprocessed-cleveland-dataset)
+      * [Main dataset: Heart disease(Processed Cleveland Dataset)](#main-dataset-heart-diseaseprocessed-cleveland-dataset)
       * [Dataset 2: Breast Cancer](#dataset-2-breast-cancer)
     * [Execution Instructions:](#execution-instructions)
     * [File Structure:](#file-structure)
+    * [References](#references)
 <!-- TOC -->
 ___
 ### Problem Statement:
@@ -33,28 +34,36 @@ or a new one. Some good resources for gradient descent optimizers are:
   1. Sigmoid 
   2. Tanh
   3. ReLu
+  
   The earlier part of this assignment may prove useful for this stage. The activation function should be a parameter in your code.
 - Code a method for creating a neural net model from the training part of the dataset. Report the training accuracy.
 - Apply the trained model on the test part of the dataset. Report the test accuracy.
 - You have to tune model parameters like learning rate, activation functions, etc. Report your results in a tabular format, with a column indicating the parameters used, a column for training accuracy, and one for test accuracy.
+
 Detailed assignment problem statement: [nn-enhanced.pdf](nn-enhanced.pdf)
 ___
 ### Implementation details:
 - Structure of Neural network:
-  - Input layer have units for each corresponding feature
+  - Input layer: units for each corresponding feature
+  - Hidden layers: upto 3 hidden layer
+    
+    - ```nn = NeuralNet(activation_function=activation, hidden_layer_size=[9, 6, 4])```\
+    3 hidden layers with 9 units in leftmost and 4 in rightmost layer
+  - Output layer: single output layer
+  - Weight initialization is done by Xavier Initialization [[2]](#references)
 - Activation Functions:
   1. sigmoid
   2. tanh
   3. relu
-  4. leaky relu
 - Gradient Descent:
-  - Batch gradient descent
-  - Mini batch gradient descent
+  - Batch gradient descent [[1]](#references)
+  - Mini batch gradient descent [[1]](#references)
+  - Stochastic gradient descent [[1]](#references)
 - Optimizations:
-  - Momentum
+  - Momentum [[1]](#references)
 ___
 ### Dataset: 
-#### Dataset 1: Heart disease(Processed Cleveland Dataset)
+#### Main dataset: Heart disease(Processed Cleveland Dataset)
 - Source: [Cleveland Heart Disease Dataset](https://www.kaggle.com/datasets/johnsmith88/heart-disease-dataset/data)
 - Description: 
   This is a preprocessed subset of UCI Heart disease dataset.
@@ -68,11 +77,11 @@ ___
 ### Execution Instructions:
 - Execution:
   ```bash
-  python main.py --dataset all --activation sigmoid --optimizer none --gradient stochastic --learning-rate 0.01 --epochs 100
+  python main.py --dataset heart --activation sigmoid --optimizer none --gradient stochastic --learning-rate 0.01 --epochs 100
   ```
   ```
   optional arguments:
-    --dataset Dataset to use: bank, cancer, heart, or all
+    --dataset Dataset to use: cancer, heart, or all
     --activation Activation function to use: sigmoid, tanh, relu
     --optimizer Optimizer to use: none, momentum, or all
     --gradient Gradient descent type: batch, minibatch, stochastic
@@ -86,7 +95,7 @@ ___
 - ReadME.md 
 - [bu.py.bu](bu.py.bu) : backup file 
 - [data](data): directory for datasets 
-- [eda.ipynb](eda.ipynb) : notebook for data exploration and misc tasks  
+- [eda.ipynb](eda.ipynb) : notebook for misc tasks  
 - [main.py](main.py) : main file 
 - [neural_net.py](neural_net.py) : file containing ANN and related code 
 - [nn-enhanced.pdf](nn-enhanced.pdf) : assignment description 
@@ -94,3 +103,7 @@ ___
   - [heart](out/heart): directory for graphs of heart dataset 
   - [cancer](out/cancer): directory for graphs of cancer dataset 
 - [utils.py](utils.py) : additional utils required for ANN 
+---
+### References
+1. [An overview of gradient descent optimization algorithms](https://arxiv.org/pdf/1609.04747.pdf)
+2. [Xavier Intialization Overview](https://paperswithcode.com/method/xavier-initialization)

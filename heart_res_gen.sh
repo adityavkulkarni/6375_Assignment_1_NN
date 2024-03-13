@@ -3,7 +3,7 @@ python main.py --dataset   heart --activation sigmoid --optimizer none --gradien
 python main.py --dataset   heart --activation sigmoid --optimizer momentum --gradient minibatch --learning-rate 0.01 --epochs 500
 python main.py --dataset   heart --activation sigmoid --optimizer none --gradient minibatch --learning-rate 0.05 --epochs 500
 python main.py --dataset   heart --activation sigmoid --optimizer momentum --gradient stochastic --learning-rate 0.05 --epochs 1500
-python main.py --dataset   heart --activation sigmoid --optimizer none --gradient stochastic --learning-rate 0.08 --epochs 2000
+python main.py --dataset   heart --activation sigmoid --optimizer none --gradient stochastic --learning-rate 0.08 --epochs 2500
 
 python main.py --dataset   heart --activation tanh --optimizer momentum --gradient batch --learning-rate 0.01 --epochs 100
 python main.py --dataset   heart --activation tanh --optimizer none --gradient batch --learning-rate 0.05 --epochs 100
