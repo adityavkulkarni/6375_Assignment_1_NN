@@ -68,7 +68,16 @@ ___
 ### Execution Instructions:
 - Execution:
   ```bash
-  python main.py --dataset <cancer|heart|all> --activation <sigmoid|tanh|relu|all> --optimizer <none|momentum|all>
+  python main.py --dataset all --activation sigmoid --optimizer none --gradient stochastic --learning-rate 0.01 --epochs 100
+  ```
+  ```
+  optional arguments:
+    --dataset Dataset to use: bank, cancer, heart, or all
+    --activation Activation function to use: sigmoid, tanh, relu
+    --optimizer Optimizer to use: none, momentum, or all
+    --gradient Gradient descent type: batch, minibatch, stochastic
+    --learning-rate Learning rate for model
+    --epochs Epochs for model
   ```
 - All necessary packages are listed in [requirements.txt](requirements.txt)  
 
