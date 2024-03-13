@@ -50,7 +50,7 @@ if __name__ == '__main__':
         train_df, val_df = load_data('data/heart.csv',
                                      target_col='target')
         nn = NeuralNet(activation_function=args.activation, hidden_layer_size=[9, 6, 4])
-        a, l, t = nn.train(training_data=train_df, test_data=val_df, gradient=args.gradient,
+        l, a, t = nn.train(training_data=train_df, test_data=val_df, gradient=args.gradient,
                            learning_rate=args.learning_rate, epochs=args.epochs, optimizer=args.optimizer,
                            plot_suffix="heart")
         res.append([
@@ -70,7 +70,7 @@ if __name__ == '__main__':
         train_df['diagnosis'] = (train_df['diagnosis'] == 'M').astype(int)
         val_df['diagnosis'] = (val_df['diagnosis'] == 'M').astype(int)
         nn_s = NeuralNet(activation_function="sigmoid", hidden_layer_size=[20, 13, 9])
-        a, l, t = nn_s.train(training_data=train_df, test_data=val_df, gradient=args.gradient,
+        l, a, t = nn_s.train(training_data=train_df, test_data=val_df, gradient=args.gradient,
                              learning_rate=args.learning_rate, epochs=args.epochs, optimizer=args.optimizer,
                              plot_suffix="cancer")
         res.append([
