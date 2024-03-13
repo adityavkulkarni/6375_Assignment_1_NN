@@ -26,4 +26,4 @@
 #python main.py --dataset   heart --activation relu --optimizer none --gradient minibatch --learning-rate 0.07 --epochs 500
 #python main.py --dataset   heart --activation relu --optimizer adagrad --gradient stochastic --learning-rate 0.0003 --epochs 500
 #python main.py --dataset   heart --activation relu --optimizer momentum --gradient stochastic --learning-rate 0.002 --epochs 1000
-python main.py --dataset   heart --activation relu --optimizer none --gradient stochastic --learning-rate 0.1 --epochs 500
+#python main.py --dataset   heart --activation relu --optimizer none --gradient stochastic --learning-rate 0.1 --epochs 500
