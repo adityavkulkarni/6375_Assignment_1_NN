@@ -55,7 +55,7 @@ if __name__ == '__main__':
                            plot_suffix="heart")
         res.append([
             args.activation, args.gradient, args.optimizer,
-            args.learning_rate, args.epochs, a, l, t
+            args.learning_rate, args.epochs, l, a, t
         ])
     res_df = pd.read_csv('out/heart/heart_results.csv')
     new = pd.DataFrame(columns=res_df.columns, data=res)
