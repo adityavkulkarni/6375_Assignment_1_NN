@@ -365,7 +365,7 @@ class NeuralNet:
               f"Test Accuracy: {self.acc_viz[-1][2]}\n"
               f"Training Time: {end_time.split('.')[0]}\n")
         self.plot_loss(self.loss_viz, self.acc_viz, f"{self.activation_function}_{optimizer}_{gradient}_{plot_suffix}")
-        return t, t_acc, exec_time.total_seconds()
+        return t, t_acc, self.acc_viz[-1][1], exec_time.total_seconds()
 
     def plot_loss(self, loss_viz, acc_viz, suffix=""):
         """

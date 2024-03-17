@@ -1,4 +1,4 @@
-Activation,Gradient,Optimizer,Learning Rate,Epochs,Test Accuracy,Loss,Time
+Activation,Gradient,Optimizer,Learning Rate,Epochs,Test Accuracy,Training Accuracy, Loss,Time
 sigmoid,batch,adagrad,0.01,100,0.0363619658456279,0.9221789883268484,39.97497
 sigmoid,batch,adagrad,0.05,100,0.0327192297722721,0.9299610894941636,40.093962
 sigmoid,batch,momentum,0.01,100,0.0360153970219855,0.926070038910506,32.839556
