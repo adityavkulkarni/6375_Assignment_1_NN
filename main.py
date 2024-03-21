@@ -41,7 +41,7 @@ if __name__ == '__main__':
     parser.add_argument('--learning-rate', type=float,
                         help='Learning rate for model', default=0.01)
     parser.add_argument('--epochs', type=int,
-                        help='Epochs for model', default=0.01)
+                        help='Epochs for model', default=50)
     args = parser.parse_args()
 
     res = []
